@@ -1,0 +1,41 @@
+name: "JARVIS"
+description: "Just A Rather Very Intelligent System – Iron Man AI Assistant for Home Assistant"
+version: "1.0.0"
+slug: "jarvis"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - armhf
+startup: application
+boot: auto
+ports:
+  8766/tcp: 8766
+ports_description:
+  8766/tcp: "JARVIS Web Interface"
+options:
+  ha_token: ""
+  ha_url: "http://homeassistant:8123"
+  openai_api_key: ""
+  wake_word: "hey jarvis"
+  tts_voice: "onyx"
+  language: "de-DE"
+  log_level: "info"
+schema:
+  ha_token: str
+  ha_url: str
+  openai_api_key: str?
+  wake_word: str
+  tts_voice: list(onyx|echo|fable|alloy|nova|shimmer)
+  language: str
+  log_level: list(debug|info|warning|error)
+panel_icon: mdi:robot
+panel_title: JARVIS
+homeassistant_api: true
+hassio_api: true
+ingress: true
+ingress_port: 8766
+map:
+  - data:rw
+microphone: true
