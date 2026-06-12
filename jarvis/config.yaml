@@ -1,6 +1,6 @@
 name: "JARVIS"
-description: "Just A Rather Very Intelligent System – Iron Man AI Assistant for Home Assistant"
-version: "1.0.0"
+description: "Just A Rather Very Intelligent System – Iron Man AI für Home Assistant (Gemini Pro)"
+version: "3.0.0"
 slug: "jarvis"
 init: false
 arch:
@@ -17,18 +17,18 @@ ports_description:
 options:
   ha_token: ""
   ha_url: "http://homeassistant:8123"
-  openai_api_key: ""
-  wake_word: "hey jarvis"
-  tts_voice: "onyx"
-  language: "de-DE"
+  gemini_api_key: ""
+  gemini_model: "gemini-2.5-pro"
+  voice_mode: "gemini_tts"
+  tts_voice: "Charon"
   log_level: "info"
 schema:
   ha_token: str
   ha_url: str
-  openai_api_key: str?
-  wake_word: str
-  tts_voice: list(onyx|echo|fable|alloy|nova|shimmer)
-  language: str
+  gemini_api_key: str?
+  gemini_model: list(gemini-2.5-pro|gemini-2.5-flash|gemini-1.5-pro|gemini-1.5-flash)
+  voice_mode: list(gemini_tts|browser)
+  tts_voice: list(Charon|Orus|Enceladus|Puck|Fenrir|Kore)
   log_level: list(debug|info|warning|error)
 panel_icon: mdi:robot
 panel_title: JARVIS
@@ -38,4 +38,3 @@ ingress: true
 ingress_port: 8766
 map:
   - data:rw
-microphone: true

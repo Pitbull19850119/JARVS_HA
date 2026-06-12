@@ -1,40 +1,42 @@
 # J.A.R.V.I.S. for Home Assistant
 
-**Just A Rather Very Intelligent System** – Iron Man inspired voice assistant.
+**Just A Rather Very Intelligent System** – Iron Man inspirierter Sprachassistent mit Gemini Pro.
 
 ## Features
-- 🎙️ Wake Word "Hey JARVIS" (browser-based, no extra hardware)
-- 🤖 AI responses via OpenAI GPT-4o (optional) or local mode
-- 🏠 Full Home Assistant device control via voice
-- 🌐 Internet search & general knowledge
-- 🔊 JARVIS voice via OpenAI TTS (optional) or browser TTS
-- ⚡ Iron Man Arc Reactor animated UI
-- 🎬 Boot sequence, wave animations, speaking visualizer
+- 🎙️ Push-to-Talk Mikrofon + Wake Word „Hey JARVIS"
+- 🧠 Google **Gemini Pro** für intelligente Antworten & Internetwissen
+- 🔊 **Gemini TTS** mit tiefer, britischer JARVIS-Stimme (Charon)
+- 🏠 Volle Home Assistant Gerätesteuerung per Sprache
+- ⚡ Iron Man Arc-Reactor UI mit Boot-Sequenz
+- 🎵 Original Startup-Sound beim Hochfahren
+- 🎬 Zuhör- und Sprech-Animationen wie im Film
 
 ## Installation
-
-1. GitHub Repo hinzufügen in HA → Add-on Store → Benutzerdefinierte Repositories
+1. GitHub Repo in HA → Add-on Store → Benutzerdefinierte Repositories
 2. **JARVIS** installieren und starten
 
 ## Konfiguration
 
-| Option | Beschreibung |
-|---|---|
-| `ha_token` | Long-Lived Access Token aus HA Profil |
-| `openai_api_key` | OpenAI API Key (optional – für GPT-4o + Stimme) |
-| `wake_word` | Wake Word (Standard: "hey jarvis") |
-| `tts_voice` | OpenAI TTS Stimme: `onyx` (tief, männlich) empfohlen |
-| `language` | Sprache: `de-DE` oder `en-US` |
+| Option | Beschreibung | Empfehlung |
+|---|---|---|
+| `ha_token` | Long-Lived Access Token aus HA Profil | erforderlich |
+| `gemini_api_key` | Google Gemini API Key (aistudio.google.com) | erforderlich für KI |
+| `gemini_model` | KI-Modell | `gemini-2.5-pro` (beste Qualität) |
+| `voice_mode` | `gemini_tts` = Film-Stimme, `browser` = einfach | `gemini_tts` |
+| `tts_voice` | Stimme: **Charon** (tief), Orus, Enceladus | `Charon` |
 
-## Ohne OpenAI API Key
-Funktioniert auch ohne – dann:
-- Lokale Befehlserkennung (Licht, Alarm, Status, Zeit)
-- Browser Web Speech API für Sprachausgabe
-- Kein Internet-Wissen
+### Gemini API Key holen (kostenlos)
+1. **aistudio.google.com** → „Get API key"
+2. Key kopieren → in Add-on Konfiguration bei `gemini_api_key`
 
-## Sprachbefehle (Beispiele)
-- *"Hey JARVIS, Licht im Wohnzimmer einschalten"*
-- *"Hey JARVIS, Alarm scharf schalten"*
-- *"Hey JARVIS, wie spät ist es?"*
-- *"Hey JARVIS, Status aller Geräte"*
-- *"Auf Wiedersehen JARVIS"* → JARVIS verabschiedet sich mit *"Bin stets zu Diensten, Sir."*
+## Stimmen-Optionen
+- **Charon** – tief, ruhig, am nächsten am Film-JARVIS ✅
+- **Orus** – fest, autoritär
+- **Enceladus** – sanft, gehaucht
+- **Browser-Modus** – wenn kein Key: tiefe System-Stimme (rate 0.88, pitch 0.7)
+
+## Sprachbefehle
+- „Hey JARVIS, Licht im Wohnzimmer einschalten"
+- „Hey JARVIS, Alarm scharf schalten"
+- „Hey JARVIS, wie wird das Wetter morgen?" (mit Gemini)
+- „Auf Wiedersehen JARVIS" → „Bin stets zu Diensten, Sir."

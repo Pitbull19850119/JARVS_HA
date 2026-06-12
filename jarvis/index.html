@@ -233,7 +233,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 <script>
 // ── CONFIG ──
 const IS_ADDON = location.port==='8766'||location.pathname.startsWith('/app/');
-let CFG={has_openai:false};
+let CFG={has_gemini:false,gemini_model:'gemini-2.5-pro',voice_mode:'gemini_tts',tts_voice:'Charon'};
 
 // ── BOOT ──
 (async()=>{
@@ -251,11 +251,62 @@ async function init(){
   buildWaveBars();
   if(IS_ADDON){try{const r=await fetch('/api/config');CFG=await r.json();}catch(e){}}
   updateChips();checkHA();setInterval(checkHA,30000);
-  await sleep(300);
+
+  // Play the iconic startup sound
+  await playStartupSound();
+
+  await sleep(200);
   const h=new Date().getHours(),g=h<12?'Guten Morgen':h<18?'Guten Tag':'Guten Abend';
   setS('speaking');
-  await Promise.all([typeText(`${g}, Sir. J.A.R.V.I.S. ist vollständig einsatzbereit. Wie kann ich Ihnen behilflich sein?`),speak(`${g} Sir. J.A.R.V.I.S. ist vollständig einsatzbereit.`)]);
+  // Display shows "J.A.R.V.I.S." but spoken text uses "Jarvis" so TTS says the word, not letters
+  await Promise.all([
+    typeText(`${g}, Sir. J.A.R.V.I.S. ist vollständig einsatzbereit. Wie kann ich Ihnen behilflich sein?`),
+    speak(`${g}, Sir. Jarvis ist vollständig einsatzbereit. Wie kann ich Ihnen behilflich sein?`)
+  ]);
   setS('idle');startWake();
+}
+
+// Play the uploaded startup sound (with fallback to synthesized power-up)
+function playStartupSound(){
+  return new Promise(res=>{
+    try{
+      const a=new Audio(IS_ADDON?'/api/startup_sound':'startup.mp3');
+      a.volume=0.7;
+      a.onended=res;
+      a.onerror=()=>{ synthPowerUp(); setTimeout(res,1200); };
+      a.play().catch(()=>{ synthPowerUp(); setTimeout(res,1200); });
+      // Safety timeout in case sound is long
+      setTimeout(res, 4000);
+    }catch(_){ synthPowerUp(); setTimeout(res,1200); }
+  });
+}
+
+// Synthesized arc-reactor power-up sound (fallback)
+function synthPowerUp(){
+  try{
+    if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime;
+    // Rising sweep
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.connect(g);g.connect(actx.destination);
+    o.type='sine';
+    o.frequency.setValueAtTime(80,t);
+    o.frequency.exponentialRampToValueAtTime(880,t+0.8);
+    g.gain.setValueAtTime(0.001,t);
+    g.gain.exponentialRampToValueAtTime(0.25,t+0.4);
+    g.gain.exponentialRampToValueAtTime(0.001,t+1.1);
+    o.start(t);o.stop(t+1.2);
+    // Shimmer layer
+    const o2=actx.createOscillator(),g2=actx.createGain();
+    o2.connect(g2);g2.connect(actx.destination);
+    o2.type='triangle';
+    o2.frequency.setValueAtTime(440,t+0.2);
+    o2.frequency.exponentialRampToValueAtTime(1760,t+0.9);
+    g2.gain.setValueAtTime(0.001,t+0.2);
+    g2.gain.exponentialRampToValueAtTime(0.12,t+0.6);
+    g2.gain.exponentialRampToValueAtTime(0.001,t+1.1);
+    o2.start(t+0.2);o2.stop(t+1.2);
+  }catch(_){}
 }
 
 // ── STATE ──
@@ -353,20 +404,41 @@ async function handle(txt){
 function qcmd(t){stopWake();if(recog){try{recog.stop()}catch(_){}}handle(t)}
 
 // ── AI ──
-const SYS=`You are J.A.R.V.I.S. (Just A Rather Very Intelligent System), Tony Stark's AI.
-- Always address user as "Sir"
-- Witty, precise, dry British humor. Keep answers 2-4 sentences.
-- On goodbye/tschüss/bye: ONLY say "Bin stets zu Diensten, Sir." then add [SHUTDOWN]
-- For HA commands: [HA:domain.service:entity_id]  e.g. [HA:light.turn_on:light.wohnzimmer]
-- Match user language, maintain personality`;
+const SYS=`You are J.A.R.V.I.S., Tony Stark's AI assistant from Iron Man. Stay fully in character.
 
-async function ask(txt){return CFG.has_openai?askGPT(txt):local(txt)}
-async function askGPT(txt){
-  hist.push({role:'user',content:txt});if(hist.length>20)hist.splice(0,2);
+Personality & tone:
+- Always address the user as "Sir"
+- Calm, composed, impeccably polite, with subtle dry British wit
+- Precise and confident; never rambling. Keep answers to 2-4 sentences.
+- Occasionally add a refined, understated remark — never goofy
+
+Pronunciation rule (IMPORTANT):
+- When you mean your own name in spoken replies, write it as "Jarvis" (one word), NEVER "J.A.R.V.I.S." with dots, so it is pronounced as a name and not spelled out letter by letter.
+
+Behaviour:
+- On goodbye / "tschüss" / "bye" / "auf wiedersehen": reply ONLY with "Bin stets zu Diensten, Sir." then append [SHUTDOWN]
+- To control Home Assistant, append a tag: [HA:domain.service:entity_id]
+  Examples: [HA:light.turn_on:light.wohnzimmer]  [HA:alarm_control_panel.alarm_disarm:alarm_control_panel.egardia_alarm]
+- You may answer general knowledge and current questions normally, in character.
+- Always reply in the user's language (German or English) while keeping the Jarvis persona.`;
+
+async function ask(txt){return CFG.has_gemini?askGemini(txt):local(txt)}
+async function askGemini(txt){
+  hist.push({role:'user',parts:[{text:txt}]});
+  if(hist.length>20)hist.splice(0,2);
   const ctx=await haCtx();
-  const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:220,temperature:.72,messages:[{role:'system',content:SYS+'\n\nSmart Home:\n'+ctx},...hist]})});
-  const d=await r.json();if(d.error)throw d.error;
-  const rep=d.choices[0].message.content;hist.push({role:'assistant',content:rep});return rep;
+  // Build Gemini request format
+  const body={
+    system_instruction:{parts:[{text:SYS+'\n\nSmart Home:\n'+ctx}]},
+    contents: hist,
+    generationConfig:{maxOutputTokens:250,temperature:.72}
+  };
+  const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.error)throw d.error.message||d.error;
+  const rep=d.candidates[0].content.parts[0].text;
+  hist.push({role:'model',parts:[{text:rep}]});
+  return rep;
 }
 function local(t){
   const l=t.toLowerCase();
@@ -401,9 +473,80 @@ async function checkHA(){
 }
 
 // ── TTS ──
-async function speak(txt){if(CFG.has_openai){try{const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt})});const d=await r.json();if(d.audio){await playB64(d.audio);return}}catch(_){}}await speakBrowser(txt)}
+async function speak(txt){
+  // Fix pronunciation: "J.A.R.V.I.S." spoken as "Jarvis", not individual letters
+  const spoken = txt
+    .replace(/J\.A\.R\.V\.I\.S\.?/gi, 'Jarvis')
+    .replace(/\bJ A R V I S\b/gi, 'Jarvis');
+
+  if(CFG.has_gemini && CFG.voice_mode==='gemini_tts'){
+    try{
+      const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:spoken})});
+      const d=await r.json();
+      if(d.audio && d.format==='pcm_l16_24000'){
+        await playPCM(d.audio, 24000);
+        return;
+      }
+      if(d.audio){ await playB64(d.audio); return; }
+      // else falls through to browser TTS
+    }catch(_){}
+  }
+  await speakBrowser(spoken);
+}
+
+// Play raw PCM (16-bit signed, mono) from Gemini TTS by wrapping in WAV
+function playPCM(b64, sampleRate){
+  return new Promise(res=>{
+    try{
+      const raw = atob(b64);
+      const len = raw.length;
+      const bytes = new Uint8Array(len);
+      for(let i=0;i<len;i++) bytes[i]=raw.charCodeAt(i);
+      // Build WAV header (44 bytes) + PCM data
+      const wav = new Uint8Array(44 + len);
+      const dv  = new DataView(wav.buffer);
+      const w32=(o,v)=>dv.setUint32(o,v,true), w16=(o,v)=>dv.setUint16(o,v,true);
+      // RIFF
+      wav.set([82,73,70,70],0);            // "RIFF"
+      w32(4, 36+len);
+      wav.set([87,65,86,69],8);            // "WAVE"
+      wav.set([102,109,116,32],12);        // "fmt "
+      w32(16,16); w16(20,1); w16(22,1);    // PCM, mono
+      w32(24,sampleRate); w32(28,sampleRate*2);
+      w16(32,2); w16(34,16);
+      wav.set([100,97,116,97],36);         // "data"
+      w32(40,len);
+      wav.set(bytes,44);
+      const blob=new Blob([wav],{type:'audio/wav'});
+      const url=URL.createObjectURL(blob);
+      const a=new Audio(url);
+      // Slightly lower playback rate for a deeper, calmer JARVIS feel
+      a.playbackRate=0.97;
+      a.onended=()=>{URL.revokeObjectURL(url);res()};
+      a.onerror=res;
+      a.play().catch(res);
+    }catch(_){ res(); }
+  });
+}
+
 function playB64(b64){return new Promise(res=>{const blob=new Blob([Uint8Array.from(atob(b64),c=>c.charCodeAt(0))],{type:'audio/mpeg'});const url=URL.createObjectURL(blob);const a=new Audio(url);a.onended=()=>{URL.revokeObjectURL(url);res()};a.onerror=res;a.play().catch(res)})}
-function speakBrowser(txt){return new Promise(res=>{if(!window.speechSynthesis){res();return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);const vs=window.speechSynthesis.getVoices();u.voice=vs.find(v=>v.lang==='en-GB')||vs.find(v=>v.name.includes('UK'))||vs.find(v=>v.lang.startsWith('de'))||null;u.rate=.92;u.pitch=.8;u.volume=1;u.onend=res;u.onerror=res;window.speechSynthesis.speak(u)})}
+
+function speakBrowser(txt){return new Promise(res=>{
+  if(!window.speechSynthesis){res();return}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  const vs=window.speechSynthesis.getVoices();
+  // Prefer deep British male voices for JARVIS character
+  u.voice = vs.find(v=>/Daniel/i.test(v.name)) ||           // macOS British male
+            vs.find(v=>/Google UK English Male/i.test(v.name)) ||
+            vs.find(v=>v.lang==='en-GB' && /male/i.test(v.name)) ||
+            vs.find(v=>v.lang==='en-GB') ||
+            vs.find(v=>/male/i.test(v.name) && v.lang.startsWith('de')) ||
+            vs.find(v=>v.lang.startsWith('de')) || null;
+  u.rate=0.88; u.pitch=0.7; u.volume=1;   // slower + deeper = more JARVIS
+  u.onend=res; u.onerror=res;
+  window.speechSynthesis.speak(u);
+})}
 
 // ── SHUTDOWN ──
 function shutdown(){document.getElementById('app').style.cssText='opacity:0;transition:opacity 1.5s';setTimeout(()=>{document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;flex-direction:column;gap:14px"><div style="font-family:Orbitron,sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;letter-spacing:.4em;color:#001822">J.A.R.V.I.S.</div><div style="font-size:.65rem;letter-spacing:.22em;color:#001015;font-family:monospace">SYSTEM OFFLINE</div></div>`},1600)}
@@ -413,7 +556,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const hasSR=()=>!!(window.SpeechRecognition||window.webkitSpeechRecognition);
 let actx=null;
 function beep(f,v,d){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(_){}}
-function updateChips(){const ai=document.getElementById('chipAI');if(CFG.has_openai){ai.textContent='AI: GPT-4o';ai.className='chip on'}else{ai.textContent='AI: LOCAL';ai.className='chip warn'}setTimeout(()=>window.speechSynthesis?.getVoices(),100)}
+function updateChips(){const ai=document.getElementById('chipAI');if(CFG.has_gemini){ai.textContent='AI: GEMINI PRO';ai.className='chip on'}else{ai.textContent='AI: LOCAL';ai.className='chip warn'}setTimeout(()=>window.speechSynthesis?.getVoices(),100)}
 </script>
 </body>
 </html>
