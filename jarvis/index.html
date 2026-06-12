@@ -10,21 +10,21 @@
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Share Tech Mono',monospace}
 :root{--c:#00d4ff;--g:#ffd040;--gr:#00ff9d;--r:#ff3b3b;--bg:#020b14}
 
-#boot{position:fixed;inset:0;z-index:999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s}
+/* ── BOOT: Video-Startsequenz ── */
+#boot{position:fixed;inset:0;z-index:999;background:#000;display:flex;align-items:center;justify-content:center;transition:opacity 1s;overflow:hidden}
 #boot.out{opacity:0;pointer-events:none}
-.blogo{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,8vw,4.5rem);font-weight:900;letter-spacing:.4em;color:#000;animation:blogoIn .8s ease .4s forwards}
-@keyframes blogoIn{to{color:var(--c);text-shadow:0 0 40px var(--c),0 0 80px rgba(0,212,255,.35)}}
-.bsub{font-size:.6rem;letter-spacing:.2em;color:rgba(0,212,255,0);margin-top:6px;animation:bsubIn .5s ease 1.2s forwards}
-@keyframes bsubIn{to{color:rgba(0,212,255,.4)}}
-.blines{margin-top:36px;width:min(380px,88vw);display:flex;flex-direction:column;gap:7px}
-.bl{font-size:.72rem;display:flex;justify-content:space-between;color:rgba(0,212,255,0);transition:color .15s}
-.bl .ok{color:var(--gr)}.bl.show{color:rgba(0,212,255,.7)}
-.bbar{width:min(380px,88vw);height:2px;background:rgba(0,212,255,.1);margin-top:22px;border-radius:1px;overflow:hidden}
-.bfill{height:100%;width:0;background:var(--c);box-shadow:0 0 8px var(--c);transition:width .08s linear}
+#bootVideo{width:100%;height:100%;object-fit:cover}
+#bootSkip{position:absolute;bottom:24px;right:24px;font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:.15em;color:rgba(0,212,255,.5);background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.25);padding:6px 14px;border-radius:3px;cursor:pointer;transition:all .2s;opacity:0;animation:skipIn .5s ease 2s forwards}
+#bootSkip:hover{background:rgba(0,212,255,.15);color:var(--c)}
+@keyframes skipIn{to{opacity:1}}
+#bootTapHint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.85);z-index:2;cursor:pointer}
+#bootTapHint .play-icon{font-family:'Orbitron',sans-serif;color:var(--c);text-align:center}
 
-.grid{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(rgba(0,212,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.022) 1px,transparent 1px);background-size:48px 48px}
-.vig{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.75) 100%)}
-.scan{position:fixed;top:-4px;left:0;right:0;height:4px;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(0,212,255,.05),transparent);animation:scanMove 7s linear infinite}
+/* ── HEXAGON HINTERGRUND (animiert, wie Referenzbild) ── */
+.hexbg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#050a0f;overflow:hidden}
+.hexbg canvas{width:100%;height:100%;display:block}
+.vig{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.55) 85%,rgba(0,0,0,.8) 100%)}
+.scan{position:fixed;top:-4px;left:0;right:0;height:4px;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(0,212,255,.04),transparent);animation:scanMove 8s linear infinite}
 @keyframes scanMove{to{top:100vh}}
 
 #app{position:relative;z-index:2;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 16px 20px;opacity:0;transition:opacity .9s}
@@ -44,37 +44,44 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 .trans{font-size:.88rem;color:var(--g);text-align:center;letter-spacing:.06em;opacity:0;transition:opacity .3s;line-height:1.5;text-shadow:0 0 10px var(--g);max-height:52px;overflow:hidden}
 .trans.on{opacity:1}
 
-.reactor{position:relative;width:min(260px,56vw);height:min(260px,56vw);flex-shrink:0}
+/* ── GROSSER RING (wie Referenzbild) ── */
+.reactor{position:relative;width:min(360px,80vw);height:min(360px,80vw);flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .rsv{position:absolute;inset:0;width:100%;height:100%}
-.rO{transform-origin:130px 130px;animation:rCW 22s linear infinite}
-.rO2{transform-origin:130px 130px;animation:rCCW 15s linear infinite}
-.rM{transform-origin:130px 130px;animation:rCW 10s linear infinite}
+
+/* Rotierende Beschriftungs-Ringe */
+.rLabels{transform-origin:200px 200px;animation:rCW 60s linear infinite}
+.rO{transform-origin:200px 200px;animation:rCW 30s linear infinite}
+.rO2{transform-origin:200px 200px;animation:rCCW 22s linear infinite}
 @keyframes rCW{to{transform:rotate(360deg)}}
 @keyframes rCCW{to{transform:rotate(-360deg)}}
-.od1{transform-origin:130px 130px;animation:rCW 5s linear infinite}
-.od2{transform-origin:130px 130px;animation:rCCW 8s linear infinite}
-.od3{transform-origin:130px 130px;animation:rCW 12s linear infinite}
 
-.pulse{position:absolute;inset:-9%;border-radius:50%;border:2px solid var(--g);opacity:0;pointer-events:none;transition:opacity .3s}
-.pulse.on{opacity:.5;animation:pulseOut 1.1s ease-out infinite}
-@keyframes pulseOut{0%{transform:scale(.9);opacity:.5}100%{transform:scale(1.2);opacity:0}}
+/* Der grosse Glüh-Ring – pulsiert beim Sprechen */
+.glowRing{transition:all .3s ease}
+.reactor.speaking .glowRing{animation:ringPulse .55s ease-in-out infinite alternate}
+@keyframes ringPulse{
+  from{stroke-width:18;opacity:.85;filter:drop-shadow(0 0 12px var(--c))}
+  to{stroke-width:30;opacity:1;filter:drop-shadow(0 0 35px var(--c)) drop-shadow(0 0 60px var(--c))}
+}
+.reactor.listening .glowRing{stroke:var(--g);filter:drop-shadow(0 0 25px var(--g));animation:ringPulse 1s ease-in-out infinite alternate}
+.reactor.thinking .glowRing{animation:ringSpin 1.5s linear infinite}
+@keyframes ringSpin{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
 
-.waver{position:absolute;inset:-6%;pointer-events:none;opacity:0;transition:opacity .3s}
-.waver.on{opacity:1}
-.wb{animation:wbeat .5s ease-in-out infinite alternate}
-.wb:nth-child(1){animation-delay:.00s}.wb:nth-child(2){animation-delay:.05s}.wb:nth-child(3){animation-delay:.10s}
-.wb:nth-child(4){animation-delay:.15s}.wb:nth-child(5){animation-delay:.20s}.wb:nth-child(6){animation-delay:.15s}
-.wb:nth-child(7){animation-delay:.10s}.wb:nth-child(8){animation-delay:.05s}.wb:nth-child(9){animation-delay:.00s}
-.wb:nth-child(10){animation-delay:.05s}.wb:nth-child(11){animation-delay:.10s}.wb:nth-child(12){animation-delay:.15s}
-.wb:nth-child(13){animation-delay:.20s}.wb:nth-child(14){animation-delay:.15s}.wb:nth-child(15){animation-delay:.10s}
-.wb:nth-child(16){animation-delay:.05s}
-@keyframes wbeat{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
+/* Innerer Kreis */
+.innerCircle{transition:all .3s ease}
+.reactor.speaking .innerCircle{animation:innerPulse .55s ease-in-out infinite alternate}
+@keyframes innerPulse{from{opacity:.6}to{opacity:1}}
 
-.rstatus{font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:.22em;color:rgba(0,212,255,.42);text-align:center;transition:color .4s;height:18px;margin-top:4px}
+/* Audio-reaktive Pulse-Scale auf ganzem Ring-Container */
+.ringScale{transition:transform .08s ease-out}
+
+.pulse{display:none}
+.waver{display:none}
+
+.rstatus{font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:.22em;color:rgba(0,212,255,.5);text-align:center;transition:color .4s;height:18px;margin-top:10px}
 
 .rbox{width:min(560px,92vw);min-height:54px;max-height:108px;overflow-y:auto;text-align:center;padding:0 8px}
 .rbox::-webkit-scrollbar{width:2px}.rbox::-webkit-scrollbar-thumb{background:rgba(0,212,255,.22)}
-.rtext{font-size:clamp(.78rem,1.8vw,.88rem);line-height:1.7;color:var(--c);opacity:0;transition:opacity .4s;white-space:pre-wrap}
+.rtext{font-size:clamp(.78rem,1.8vw,.88rem);line-height:1.7;color:var(--c);opacity:0;transition:opacity .4s;white-space:pre-wrap;text-shadow:0 0 8px rgba(0,212,255,.4)}
 .rtext.on{opacity:1}
 .cur{display:inline-block;width:7px;height:1em;background:var(--c);margin-left:2px;vertical-align:text-bottom;animation:blink .7s step-end infinite;opacity:0}
 .cur.on{opacity:1}
@@ -104,20 +111,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 <body>
 
 <div id="boot">
-  <div class="blogo">J.A.R.V.I.S.</div>
-  <div class="bsub">JUST A RATHER VERY INTELLIGENT SYSTEM · STARK INDUSTRIES</div>
-  <div class="blines">
-    <div class="bl"><span>INITIALISIERE NEURONALES NETZWERK</span><span class="ok">OK</span></div>
-    <div class="bl"><span>VERBINDE MIT HOME ASSISTANT</span><span class="ok">OK</span></div>
-    <div class="bl"><span>LADE SPRACHVERARBEITUNGSMODULE</span><span class="ok">OK</span></div>
-    <div class="bl"><span>KALIBRIERE MIKROFON-ARRAY</span><span class="ok">OK</span></div>
-    <div class="bl"><span>AKTIVIERE WAKE-WORD-ERKENNUNG</span><span class="ok">OK</span></div>
-    <div class="bl"><span>ALLE SYSTEME NOMINAL</span><span class="ok" style="color:var(--g)">BEREIT</span></div>
+  <video id="bootVideo" playsinline muted preload="auto">
+    <source src="api/startup_video" type="video/mp4">
+    <source src="/api/startup_video" type="video/mp4">
+  </video>
+  <div id="bootSkip" onclick="endBoot()">ÜBERSPRINGEN ►</div>
+  <div id="bootTapHint" onclick="startBoot()">
+    <div class="play-icon">
+      <div style="font-size:clamp(1.6rem,5vw,2.6rem);font-weight:900;letter-spacing:.3em">J.A.R.V.I.S.</div>
+      <div style="font-size:.7rem;letter-spacing:.2em;margin-top:14px;color:rgba(0,212,255,.6)">► TIPPEN ZUM STARTEN</div>
+    </div>
   </div>
-  <div class="bbar"><div class="bfill" id="bfill"></div></div>
 </div>
 
-<div class="grid"></div><div class="vig"></div><div class="scan"></div>
+<div class="hexbg"><canvas id="hexCanvas"></canvas></div>
+<div class="vig"></div><div class="scan"></div>
 
 <div id="app">
   <div class="topbar">
@@ -134,76 +142,66 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
   <div class="center">
     <div class="tbox"><div class="trans" id="trans"></div></div>
 
-    <div class="reactor">
-      <div class="pulse" id="pulse"></div>
-      <div class="waver" id="waver">
-        <svg viewBox="0 0 290 290" style="width:100%;height:100%" id="wsvg"></svg>
-      </div>
-      <svg class="rsv" viewBox="0 0 260 260" fill="none">
+    <div class="reactor" id="reactor">
+      <svg class="rsv" viewBox="0 0 400 400" fill="none">
         <defs>
-          <radialGradient id="gI" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#00d4ff" stop-opacity=".85"/>
-            <stop offset="45%" stop-color="#003a5c" stop-opacity=".5"/>
-            <stop offset="100%" stop-color="#000d1a" stop-opacity=".05"/>
+          <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0a1520" stop-opacity="1"/>
+            <stop offset="80%" stop-color="#050d15" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#00222e" stop-opacity="1"/>
           </radialGradient>
-          <radialGradient id="gL" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ffd040" stop-opacity="1"/>
-            <stop offset="50%" stop-color="#8b5e00" stop-opacity=".4"/>
-            <stop offset="100%" stop-color="#000d1a" stop-opacity=".05"/>
-          </radialGradient>
-          <radialGradient id="gS" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#00ff9d" stop-opacity=".9"/>
-            <stop offset="50%" stop-color="#005535" stop-opacity=".35"/>
-            <stop offset="100%" stop-color="#000d1a" stop-opacity=".05"/>
-          </radialGradient>
-          <filter id="fw"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <filter id="fws"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <path id="labelPath" d="M 60,200 A 140,140 0 1 1 340,200 A 140,140 0 1 1 60,200" fill="none"/>
         </defs>
-        <circle cx="130" cy="130" r="126" stroke="rgba(0,212,255,.08)" stroke-width="1"/>
-        <g stroke="rgba(0,212,255,.18)" stroke-width="1">
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(0   130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(30  130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(60  130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(90  130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(120 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(150 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(180 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(210 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(240 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(270 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(300 130 130)"/>
-          <line x1="130" y1="4"   x2="130" y2="15"  transform="rotate(330 130 130)"/>
+
+        <!-- Aussenring mit Beschriftung (rotierend, wie Referenzbild) -->
+        <g class="rLabels">
+          <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(0,212,255,.12)" stroke-width="42"/>
+          <circle cx="200" cy="200" r="172" fill="none" stroke="rgba(0,212,255,.15)" stroke-width="1"/>
+          <circle cx="200" cy="200" r="129" fill="none" stroke="rgba(0,212,255,.15)" stroke-width="1"/>
+          <!-- Menü-Labels im Ring -->
+          <text font-family="Share Tech Mono" font-size="9" fill="rgba(0,212,255,.55)" letter-spacing="1.5">
+            <textPath href="#labelPath" startOffset="0%">News · Settings · Email · Debug · Emulate · Test · Arm · None · Gaming · Keyboard · Info · Alarm · Music · Customize · </textPath>
+          </text>
         </g>
-        <g class="rO" filter="url(#fw)">
-          <circle cx="130" cy="130" r="110" stroke="rgba(0,212,255,.28)" stroke-width="1" stroke-dasharray="4 9"/>
-          <circle cx="130" cy="20" r="5" fill="#00d4ff" opacity=".8"/>
-          <circle cx="240" cy="130" r="3" fill="#00d4ff" opacity=".5"/>
-          <circle cx="130" cy="240" r="3.5" fill="#00d4ff" opacity=".55"/>
-        </g>
-        <g class="rO2" filter="url(#fw)">
-          <circle cx="130" cy="130" r="92" stroke="rgba(0,212,255,.18)" stroke-width="1" stroke-dasharray="2 11"/>
-          <circle cx="130" cy="38" r="4" fill="rgba(0,212,255,.65)"/>
-          <circle cx="222" cy="130" r="3" fill="rgba(0,212,255,.5)"/>
-        </g>
-        <g class="rM">
-          <circle cx="130" cy="130" r="75" stroke="rgba(0,212,255,.14)" stroke-width="1.5"/>
-          <g stroke="rgba(0,212,255,.36)" stroke-width="1.5">
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(0   130 130)"/>
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(60  130 130)"/>
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(120 130 130)"/>
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(180 130 130)"/>
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(240 130 130)"/>
-            <line x1="130" y1="55" x2="130" y2="66" transform="rotate(300 130 130)"/>
+
+        <!-- Dunkler Innenbereich -->
+        <circle cx="200" cy="200" r="105" fill="url(#centerGrad)"/>
+
+        <!-- Tick-Markierungen aussen (rotierend gegenläufig) -->
+        <g class="rO2">
+          <g stroke="rgba(0,212,255,.3)" stroke-width="1.5">
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(0 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(30 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(60 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(90 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(120 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(150 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(180 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(210 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(240 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(270 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(300 200 200)"/>
+            <line x1="200" y1="26" x2="200" y2="38" transform="rotate(330 200 200)"/>
           </g>
         </g>
-        <polygon points="130,65 181,95 181,165 130,195 79,165 79,95" stroke="rgba(0,212,255,.34)" stroke-width="1.5" fill="none" filter="url(#fw)"/>
-        <polygon points="130,77 175,102 175,158 130,183 85,158 85,102" id="hexF" fill="url(#gI)"/>
-        <circle cx="130" cy="130" r="36" fill="none" stroke="rgba(0,212,255,.52)" stroke-width="1.5" filter="url(#fw)"/>
-        <circle cx="130" cy="130" r="26" id="coreDot" fill="rgba(0,212,255,.07)"/>
-        <text x="130" y="137" text-anchor="middle" font-family="Orbitron" font-size="16" font-weight="900" id="coreSym" fill="#00d4ff" filter="url(#fws)">⬡</text>
-        <g class="od1"><circle cx="130" cy="63" r="4" fill="#00d4ff" opacity=".9" filter="url(#fw)"/></g>
-        <g class="od2"><circle cx="206" cy="155" r="3" fill="#00d4ff" opacity=".7" filter="url(#fw)"/></g>
-        <g class="od3"><circle cx="73" cy="166" r="3.5" fill="#00d4ff" opacity=".8" filter="url(#fw)"/></g>
+
+        <!-- DER GROSSE GLÜH-RING (pulsiert beim Sprechen) -->
+        <circle class="glowRing" id="glowRing" cx="200" cy="200" r="118" fill="none"
+          stroke="#00d4ff" stroke-width="18" filter="url(#ringGlow)"
+          style="filter:drop-shadow(0 0 12px #00d4ff)"/>
+
+        <!-- Innerer Kreis -->
+        <circle class="innerCircle" id="innerCircle" cx="200" cy="200" r="78" fill="none"
+          stroke="rgba(0,212,255,.5)" stroke-width="2" filter="url(#ringGlow)"/>
+        <circle cx="200" cy="200" r="70" fill="rgba(5,13,21,.6)"/>
+
+        <!-- Zentrales Symbol -->
+        <text x="200" y="212" text-anchor="middle" font-family="Orbitron" font-size="34"
+          font-weight="900" id="coreSym" fill="rgba(0,212,255,.85)" filter="url(#ringGlow)">⬡</text>
       </svg>
     </div>
 
@@ -233,32 +231,130 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 <script>
 // ── CONFIG ──
 const IS_ADDON = location.port==='8766'||location.pathname.startsWith('/app/');
-let CFG={has_gemini:false,gemini_model:'gemini-2.5-pro',voice_mode:'gemini_tts',tts_voice:'Charon'};
+let CFG={has_gemini:false,gemini_model:'gemini-2.5-pro',voice_mode:'browser',tts_voice:'de'};
 
-// ── BOOT ──
-(async()=>{
-  const lines=document.querySelectorAll('.bl'),fill=document.getElementById('bfill'),p=ms=>new Promise(r=>setTimeout(r,ms));
-  for(let i=0;i<lines.length;i++){await p(280+i*70);lines[i].classList.add('show');fill.style.width=((i+1)/lines.length*100)+'%'}
-  await p(520);
+// All HA entities, loaded once on startup
+let ENTITIES = [];
+
+// ── HEXAGON HINTERGRUND (Canvas, animiertes Glühen) ──
+function startHexBackground(){
+  const canvas = document.getElementById('hexCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, hexes=[];
+  const SIZE = 34;            // Hex-Radius
+  const HG   = SIZE * Math.sqrt(3); // horizontaler Abstand
+
+  function resize(){
+    W = canvas.width  = window.innerWidth  * devicePixelRatio;
+    H = canvas.height = window.innerHeight * devicePixelRatio;
+    canvas.style.width  = window.innerWidth+'px';
+    canvas.style.height = window.innerHeight+'px';
+    buildHexes();
+  }
+
+  function buildHexes(){
+    hexes=[];
+    const cols = Math.ceil(W/HG)+2;
+    const rows = Math.ceil(H/(SIZE*1.5))+2;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x = c*HG + (r%2?HG/2:0);
+        const y = r*SIZE*1.5;
+        hexes.push({x,y,
+          phase: Math.random()*Math.PI*2,
+          speed: 0.4+Math.random()*0.8,
+          baseHue: Math.random()<0.5?190:160  // cyan oder grün
+        });
+      }
+    }
+  }
+
+  function drawHex(x,y,size,glow,hue){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a = Math.PI/180*(60*i-30);
+      const px = x+size*Math.cos(a), py=y+size*Math.sin(a);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    // Füllung dunkel
+    ctx.fillStyle='rgba(8,16,24,0.55)';
+    ctx.fill();
+    // Rand mit Glühen
+    const alpha = 0.08 + glow*0.55;
+    ctx.strokeStyle=`hsla(${hue},100%,55%,${alpha})`;
+    ctx.lineWidth = devicePixelRatio*(1+glow*1.5);
+    if(glow>0.5){ ctx.shadowBlur=18*devicePixelRatio; ctx.shadowColor=`hsla(${hue},100%,55%,${glow})`; }
+    else ctx.shadowBlur=0;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+
+  let t=0;
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    t+=0.016;
+    for(const h of hexes){
+      // sanftes Pulsieren + gelegentlich heller Glow-Sweep
+      const g = (Math.sin(t*h.speed + h.phase)+1)/2;
+      const glow = Math.pow(g,3);  // meist dunkel, selten hell
+      drawHex(h.x*devicePixelRatio, h.y*devicePixelRatio, SIZE*devicePixelRatio*0.92, glow, h.baseHue);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  frame();
+}
+
+// ── BOOT mit Video ──
+let bootStarted=false, bootEnded=false;
+
+window.addEventListener('load', ()=>{
+  startHexBackground();
+  const v = document.getElementById('bootVideo');
+  // Versuch automatisch zu starten (muted erlaubt das)
+  v.play().then(()=>{
+    document.getElementById('bootTapHint').style.display='none';
+    bootStarted=true;
+  }).catch(()=>{
+    // Autoplay blockiert – Tap-Hinweis bleibt sichtbar
+  });
+  v.addEventListener('ended', endBoot);
+});
+
+function startBoot(){
+  if(bootStarted) return;
+  bootStarted=true;
+  document.getElementById('bootTapHint').style.display='none';
+  const v=document.getElementById('bootVideo');
+  v.muted=false; v.volume=0.8;
+  v.play().catch(()=>{ v.muted=true; v.play(); });
+  // Audio-Kontext freischalten für spätere Sounds
+  try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); }catch(_){}
+}
+
+function endBoot(){
+  if(bootEnded) return;
+  bootEnded=true;
   document.getElementById('boot').classList.add('out');
   document.getElementById('app').classList.add('on');
-  await p(350);document.getElementById('boot').remove();
+  setTimeout(()=>{ const b=document.getElementById('boot'); if(b)b.remove(); }, 1000);
   init();
-})();
+}
 
 // ── INIT ──
 async function init(){
-  buildWaveBars();
   if(IS_ADDON){try{const r=await fetch('/api/config');CFG=await r.json();}catch(e){}}
-  updateChips();checkHA();setInterval(checkHA,30000);
+  if(window.speechSynthesis){ window.speechSynthesis.getVoices(); }
+  updateChips();
+  await loadEntities();
+  setInterval(loadEntities,60000);
 
-  // Play the iconic startup sound
-  await playStartupSound();
-
-  await sleep(200);
+  await sleep(300);
   const h=new Date().getHours(),g=h<12?'Guten Morgen':h<18?'Guten Tag':'Guten Abend';
   setS('speaking');
-  // Display shows "J.A.R.V.I.S." but spoken text uses "Jarvis" so TTS says the word, not letters
   await Promise.all([
     typeText(`${g}, Sir. J.A.R.V.I.S. ist vollständig einsatzbereit. Wie kann ich Ihnen behilflich sein?`),
     speak(`${g}, Sir. Jarvis ist vollständig einsatzbereit. Wie kann ich Ihnen behilflich sein?`)
@@ -266,82 +362,39 @@ async function init(){
   setS('idle');startWake();
 }
 
-// Play the uploaded startup sound (with fallback to synthesized power-up)
-function playStartupSound(){
-  return new Promise(res=>{
-    try{
-      const a=new Audio(IS_ADDON?'/api/startup_sound':'startup.mp3');
-      a.volume=0.7;
-      a.onended=res;
-      a.onerror=()=>{ synthPowerUp(); setTimeout(res,1200); };
-      a.play().catch(()=>{ synthPowerUp(); setTimeout(res,1200); });
-      // Safety timeout in case sound is long
-      setTimeout(res, 4000);
-    }catch(_){ synthPowerUp(); setTimeout(res,1200); }
-  });
-}
-
-// Synthesized arc-reactor power-up sound (fallback)
-function synthPowerUp(){
-  try{
-    if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
-    const t=actx.currentTime;
-    // Rising sweep
-    const o=actx.createOscillator(),g=actx.createGain();
-    o.connect(g);g.connect(actx.destination);
-    o.type='sine';
-    o.frequency.setValueAtTime(80,t);
-    o.frequency.exponentialRampToValueAtTime(880,t+0.8);
-    g.gain.setValueAtTime(0.001,t);
-    g.gain.exponentialRampToValueAtTime(0.25,t+0.4);
-    g.gain.exponentialRampToValueAtTime(0.001,t+1.1);
-    o.start(t);o.stop(t+1.2);
-    // Shimmer layer
-    const o2=actx.createOscillator(),g2=actx.createGain();
-    o2.connect(g2);g2.connect(actx.destination);
-    o2.type='triangle';
-    o2.frequency.setValueAtTime(440,t+0.2);
-    o2.frequency.exponentialRampToValueAtTime(1760,t+0.9);
-    g2.gain.setValueAtTime(0.001,t+0.2);
-    g2.gain.exponentialRampToValueAtTime(0.12,t+0.6);
-    g2.gain.exponentialRampToValueAtTime(0.001,t+1.1);
-    o2.start(t+0.2);o2.stop(t+1.2);
-  }catch(_){}
-}
 
 // ── STATE ──
 let S='idle';
 const ST={
-  idle:    {label:'STANDBY',   color:'rgba(0,212,255,.42)',hex:'url(#gI)',dot:'rgba(0,212,255,.07)', sym:'⬡', sc:'#00d4ff'},
-  listening:{label:'HÖRE ZU', color:'#ffd040',            hex:'url(#gL)',dot:'rgba(255,208,64,.12)',sym:'◉', sc:'#ffd040'},
-  thinking: {label:'VERARBEITE',color:'#00d4ff',          hex:'url(#gI)',dot:'rgba(0,212,255,.18)', sym:'◈', sc:'#00d4ff'},
-  speaking: {label:'SPRICHT', color:'#00ff9d',            hex:'url(#gS)',dot:'rgba(0,255,157,.1)',  sym:'◆', sc:'#00ff9d'},
+  idle:     {label:'STANDBY',    color:'rgba(0,212,255,.5)',  ring:'#00d4ff', sym:'⬡'},
+  listening:{label:'HÖRE ZU',    color:'#ffd040',             ring:'#ffd040', sym:'◉'},
+  thinking: {label:'VERARBEITE', color:'#00d4ff',             ring:'#00d4ff', sym:'◈'},
+  speaking: {label:'SPRICHT',    color:'#00ff9d',             ring:'#00d4ff', sym:'◆'},
 };
 function setS(s){
-  S=s;const c=ST[s]||ST.idle;
-  document.getElementById('rstatus').textContent=c.label;
-  document.getElementById('rstatus').style.color=c.color;
-  document.getElementById('hexF').setAttribute('fill',c.hex);
-  document.getElementById('coreDot').setAttribute('fill',c.dot);
-  document.getElementById('coreSym').setAttribute('fill',c.sc);
-  document.getElementById('coreSym').textContent=c.sym;
-  document.getElementById('pulse').classList.toggle('on',s==='listening');
-  document.getElementById('waver').classList.toggle('on',s==='speaking');
-  document.getElementById('mic').classList.toggle('active',s==='listening');
-}
+  S=s;
+  const c=ST[s]||ST.idle;
+  const reactor=document.getElementById('reactor');
+  const ring=document.getElementById('glowRing');
+  const inner=document.getElementById('innerCircle');
+  const sym=document.getElementById('coreSym');
+  const rs=document.getElementById('rstatus');
 
-// ── WAVE BARS ──
-function buildWaveBars(){
-  const g=document.getElementById('wsvg'),N=16,cx=145,cy=145,r=125;
-  for(let i=0;i<N;i++){
-    const a=(i/N)*Math.PI*2-Math.PI/2,x=cx+r*Math.cos(a),y=cy+r*Math.sin(a),rot=(i/N)*360;
-    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',x-3);rect.setAttribute('y',y-14);
-    rect.setAttribute('width','6');rect.setAttribute('height','20');
-    rect.setAttribute('rx','2');rect.setAttribute('fill','#00ff9d');rect.setAttribute('opacity','.65');
-    rect.style.transformOrigin=`${x}px ${y}px`;rect.style.transform=`rotate(${rot}deg)`;
-    rect.classList.add('wb');g.appendChild(rect);
-  }
+  // Reactor-Status-Klasse steuert die Puls-Animationen via CSS
+  reactor.className = 'reactor ' + s;
+
+  rs.textContent = c.label;
+  rs.style.color = c.color;
+  sym.textContent = c.sym;
+  sym.setAttribute('fill', c.color);
+
+  // Ring-Grundfarbe (idle/thinking/speaking = cyan, listening = gold)
+  if(s!=='speaking'){ ring.setAttribute('stroke', c.ring); }
+  else { ring.setAttribute('stroke', '#00d4ff'); }
+  inner.setAttribute('stroke', (s==='listening'?'rgba(255,208,64,.6)':'rgba(0,212,255,.5)'));
+
+  const mic=document.getElementById('mic');
+  if(mic) mic.classList.toggle('active', s==='listening');
 }
 
 // ── TYPEWRITER ──
@@ -426,12 +479,12 @@ async function ask(txt){return CFG.has_gemini?askGemini(txt):local(txt)}
 async function askGemini(txt){
   hist.push({role:'user',parts:[{text:txt}]});
   if(hist.length>20)hist.splice(0,2);
-  const ctx=await haCtx();
+  const ctx=haContextText();
   // Build Gemini request format
   const body={
-    system_instruction:{parts:[{text:SYS+'\n\nSmart Home:\n'+ctx}]},
+    system_instruction:{parts:[{text:SYS+'\n\nVerfügbare Smart-Home-Geräte (nutze die exakte entity_id in Klammern für [HA:...] Befehle):\n'+ctx}]},
     contents: hist,
-    generationConfig:{maxOutputTokens:250,temperature:.72}
+    generationConfig:{maxOutputTokens:400,temperature:.7}
   };
   const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();
@@ -440,113 +493,189 @@ async function askGemini(txt){
   hist.push({role:'model',parts:[{text:rep}]});
   return rep;
 }
+
+// Local command handler – uses REAL entities loaded from HA
 function local(t){
   const l=t.toLowerCase();
-  if(/tschüss|auf wieder|bye|goodbye|beenden|stopp jarvis/.test(l))return'Bin stets zu Diensten, Sir. [SHUTDOWN]';
-  if(/licht.*(an|ein|on)|turn on light/.test(l)){const r=room(l);const e=r?`light.${r}`:'light.all';return`Das Licht${r?' im '+r.replace(/_/g,' '):''}  wurde eingeschaltet, Sir. [HA:light.turn_on:${e}]`}
-  if(/licht.*(aus|off)|turn off light/.test(l)){const r=room(l);const e=r?`light.${r}`:'light.all';return`Das Licht${r?' im '+r.replace(/_/g,' '):''}  wurde ausgeschaltet, Sir. [HA:light.turn_off:${e}]`}
-  if(/alarm.*(scharf|arm|an|aktiv)/.test(l))return'Sicherheitsanlage scharfgestellt, Sir. [HA:alarm_control_panel.alarm_arm_away:alarm_control_panel.egardia_alarm]';
-  if(/alarm.*(unscharf|disarm|aus|deaktiv)/.test(l))return'Sicherheitsanlage deaktiviert. Willkommen zurück, Sir. [HA:alarm_control_panel.alarm_disarm:alarm_control_panel.egardia_alarm]';
   const n=new Date();
-  if(/uhrzeit|wie spät|what time/.test(l))return`Es ist ${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')} Uhr, Sir.`;
-  if(/datum|welcher tag/.test(l))return`Heute ist der ${n.getDate()}.${n.getMonth()+1}.${n.getFullYear()}, Sir.`;
-  if(/hallo|guten|hello|hi\b/.test(l)){const g=n.getHours()<12?'Guten Morgen':n.getHours()<18?'Guten Tag':'Guten Abend';return`${g}, Sir. Wie kann ich Ihnen behilflich sein?`}
-  return'Verstanden, Sir. Für erweiterte KI-Funktionen fügen Sie einen OpenAI API-Schlüssel in den Add-on Einstellungen hinzu.';
+
+  if(/tschüss|auf wieder|^bye|goodbye|beenden|stopp jarvis/.test(l))
+    return 'Bin stets zu Diensten, Sir. [SHUTDOWN]';
+
+  // LIGHTS ON
+  if(/licht.*(an|ein|on)|schalte.*licht.*(an|ein)|mach.*licht.*an/.test(l)){
+    const hint=room(l);
+    const eid=findEntity('light',hint);
+    if(!eid) return 'Ich finde keine Lichter in Ihrem System, Sir.';
+    const ids=Array.isArray(eid)?eid:[eid];
+    const cmds=ids.map(e=>`[HA:light.turn_on:${e}]`).join('');
+    return `Das Licht${hint?' im '+hint:''} wurde eingeschaltet, Sir. ${cmds}`;
+  }
+  // LIGHTS OFF
+  if(/licht.*(aus|off)|schalte.*licht.*aus|mach.*licht.*aus/.test(l)){
+    const hint=room(l);
+    const eid=findEntity('light',hint);
+    if(!eid) return 'Ich finde keine Lichter in Ihrem System, Sir.';
+    const ids=Array.isArray(eid)?eid:[eid];
+    const cmds=ids.map(e=>`[HA:light.turn_off:${e}]`).join('');
+    return `Das Licht${hint?' im '+hint:''} wurde ausgeschaltet, Sir. ${cmds}`;
+  }
+  // SWITCH ON/OFF
+  if(/(steckdose|schalter|switch).*(an|ein|on)/.test(l)){
+    const eid=findEntity('switch',room(l));
+    if(eid){const ids=Array.isArray(eid)?eid:[eid];return `Eingeschaltet, Sir. `+ids.map(e=>`[HA:switch.turn_on:${e}]`).join('');}
+  }
+  if(/(steckdose|schalter|switch).*(aus|off)/.test(l)){
+    const eid=findEntity('switch',room(l));
+    if(eid){const ids=Array.isArray(eid)?eid:[eid];return `Ausgeschaltet, Sir. `+ids.map(e=>`[HA:switch.turn_off:${e}]`).join('');}
+  }
+  // ALARM
+  if(/alarm.*(scharf|arm|aktiv)|scharf.*schalt/.test(l)){
+    const eid=findEntity('alarm_control_panel',null);
+    const id=Array.isArray(eid)?eid[0]:eid;
+    if(id) return `Die Sicherheitsanlage wurde scharfgestellt, Sir. [HA:alarm_control_panel.alarm_arm_away:${id}]`;
+    return 'Ich finde keine Alarmanlage in Ihrem System, Sir.';
+  }
+  if(/alarm.*(unscharf|disarm|deaktiv)|unscharf.*schalt/.test(l)){
+    const eid=findEntity('alarm_control_panel',null);
+    const id=Array.isArray(eid)?eid[0]:eid;
+    if(id) return `Die Sicherheitsanlage wurde deaktiviert. Willkommen zurück, Sir. [HA:alarm_control_panel.alarm_disarm:${id}]`;
+    return 'Ich finde keine Alarmanlage in Ihrem System, Sir.';
+  }
+  // STATUS
+  if(/status|übersicht|was.*(an|läuft)/.test(l)){
+    const lightsOn=ENTITIES.filter(e=>e.entity_id.startsWith('light.')&&e.state==='on');
+    const names=lightsOn.map(e=>e.attributes.friendly_name||e.entity_id);
+    if(lightsOn.length===0) return 'Momentan sind alle Lichter ausgeschaltet, Sir. Alle Systeme nominal.';
+    return `Aktuell sind ${lightsOn.length} Lichter eingeschaltet, Sir: ${names.join(', ')}.`;
+  }
+  // TIME / DATE
+  if(/uhrzeit|wie spät|what time/.test(l))
+    return `Es ist ${n.getHours()} Uhr ${n.getMinutes()}, Sir.`;
+  if(/datum|welcher tag|welches datum/.test(l))
+    return `Heute ist der ${n.getDate()}. ${['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'][n.getMonth()]} ${n.getFullYear()}, Sir.`;
+  // GREETING
+  if(/hallo|guten|hello|hi\b/.test(l)){
+    const g=n.getHours()<12?'Guten Morgen':n.getHours()<18?'Guten Tag':'Guten Abend';
+    return `${g}, Sir. Wie kann ich Ihnen behilflich sein?`;
+  }
+  return 'Verstanden, Sir. Für komplexe Fragen und freie Gespräche aktivieren Sie bitte den Gemini-Schlüssel in den Einstellungen. Smart-Home-Befehle führe ich aber gerne aus.';
 }
-function room(t){return['wohnzimmer','schlafzimmer','küche','bad','badezimmer','kinderzimmer','esszimmer','flur','keller','garage','büro'].find(r=>t.includes(r))||null}
+
+function room(t){
+  // Try to extract a room/name hint from speech; null = all
+  const known=['wohnzimmer','schlafzimmer','küche','kueche','bad','badezimmer','kinderzimmer',
+               'esszimmer','flur','diele','keller','garage','büro','buero','terrasse','garten',
+               'arbeitszimmer','gäste','gaeste','dachboden','eingang','treppe'];
+  const found=known.find(r=>t.includes(r));
+  if(found) return found;
+  // "im X" pattern
+  const m=t.match(/(?:im|in der|in dem|das|der|die)\s+([a-zäöüß]+)\s*(?:licht|lampe|einschalten|ausschalten|an|aus)?/);
+  return m?m[1]:null;
+}
 
 // ── HA ──
-async function haCtx(){
-  try{const r=await fetch('/api/ha/states');if(!r.ok)return'N/A';const ss=await r.json();
-    const li=ss.filter(s=>s.entity_id.startsWith('light.')),al=ss.filter(s=>s.entity_id.startsWith('alarm_control_panel.'));
-    return[`Lichter AN: ${li.filter(l=>l.state==='on').map(l=>l.attributes.friendly_name||l.entity_id).join(', ')||'keine'}`,...al.map(a=>`Alarm: ${a.state}`)].join('\n');
-  }catch(_){return'Nicht verfügbar'}}
-function execHA(resp){
-  for(const m of resp.matchAll(/\[HA:([^:]+):([^\]]*)\]/g)){
-    const[domain,service]=m[1].split('.');const entity=m[2];if(!domain||!service)continue;
-    fetch(`/api/ha/services/${domain}/${service}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entity?{entity_id:entity}:{})}).catch(()=>{});
-  }
-}
-async function checkHA(){
-  try{const r=await fetch('/api/ha/states');const ok=r.ok;
-    const ch=document.getElementById('chipHA');ch.textContent=ok?'HA: ONLINE':'HA: OFFLINE';ch.className='chip'+(ok?' on':'');}catch(_){document.getElementById('chipHA').textContent='HA: OFFLINE'}
+async function loadEntities(){
+  try{
+    const r=await fetch('/api/ha/states');
+    if(!r.ok){ setChip(false); return; }
+    ENTITIES = await r.json();
+    setChip(true);
+  }catch(_){ setChip(false); }
 }
 
-// ── TTS ──
+function setChip(ok){
+  const ch=document.getElementById('chipHA');
+  ch.textContent = ok ? `HA: ${ENTITIES.length} GERÄTE` : 'HA: OFFLINE';
+  ch.className = 'chip' + (ok ? ' on' : '');
+}
+
+// Find entity by domain + spoken room/name. Returns entity_id or null.
+function findEntity(domain, nameHint){
+  const inDomain = ENTITIES.filter(e=>e.entity_id.startsWith(domain+'.'));
+  if(inDomain.length===0) return null;
+  if(!nameHint){
+    // No specific room: return all entity_ids of that domain
+    return inDomain.map(e=>e.entity_id);
+  }
+  const hint = nameHint.toLowerCase().trim();
+  // Match against friendly_name or entity_id
+  const match = inDomain.find(e=>{
+    const fn = (e.attributes.friendly_name||'').toLowerCase();
+    const id = e.entity_id.toLowerCase();
+    return fn.includes(hint) || id.includes(hint.replace(/\s+/g,'_')) || id.includes(hint.replace(/\s+/g,''));
+  });
+  return match ? match.entity_id : inDomain.map(e=>e.entity_id);
+}
+
+// Build a readable context of devices for Gemini
+function haContextText(){
+  if(ENTITIES.length===0) return 'Keine Geräte geladen.';
+  const groups={};
+  for(const e of ENTITIES){
+    const d=e.entity_id.split('.')[0];
+    if(!['light','switch','climate','cover','fan','lock','media_player','alarm_control_panel','scene','script','input_boolean'].includes(d)) continue;
+    (groups[d]=groups[d]||[]).push(`${e.attributes.friendly_name||e.entity_id} (${e.entity_id}) = ${e.state}`);
+  }
+  return Object.entries(groups).map(([d,list])=>`${d}:\n  `+list.join('\n  ')).join('\n');
+}
+
+function execHA(resp){
+  let didAction=false;
+  for(const m of resp.matchAll(/\[HA:([^:]+):([^\]]*)\]/g)){
+    const[domain,service]=m[1].split('.');
+    const entity=m[2].trim();
+    if(!domain||!service)continue;
+    const body = entity ? {entity_id: entity} : {};
+    fetch(`/api/ha/services/${domain}/${service}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    }).then(()=>{ setTimeout(loadEntities,1500); })
+      .catch(()=>{});
+    didAction=true;
+  }
+  return didAction;
+}
+// ── TTS – natürliche deutsche Stimme ──
+let GERMAN_VOICE = null;
+
+function pickGermanVoice(){
+  if(!window.speechSynthesis) return null;
+  const vs = window.speechSynthesis.getVoices();
+  if(!vs.length) return null;
+  // Best natural German voices, in order of preference
+  GERMAN_VOICE =
+    vs.find(v=>/Google Deutsch/i.test(v.name)) ||                    // Chrome – sehr natürlich
+    vs.find(v=>v.lang==='de-DE' && /Markus|Yannick|Conrad/i.test(v.name)) ||  // Edge männlich
+    vs.find(v=>v.lang==='de-DE' && /Petra|Katja|Hedda/i.test(v.name)) ||      // Edge weiblich
+    vs.find(v=>v.lang==='de-DE') ||
+    vs.find(v=>v.lang && v.lang.startsWith('de')) ||
+    null;
+  return GERMAN_VOICE;
+}
+
 async function speak(txt){
-  // Fix pronunciation: "J.A.R.V.I.S." spoken as "Jarvis", not individual letters
+  // "J.A.R.V.I.S." als "Jarvis" aussprechen, nicht buchstabieren
   const spoken = txt
     .replace(/J\.A\.R\.V\.I\.S\.?/gi, 'Jarvis')
-    .replace(/\bJ A R V I S\b/gi, 'Jarvis');
-
-  if(CFG.has_gemini && CFG.voice_mode==='gemini_tts'){
-    try{
-      const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:spoken})});
-      const d=await r.json();
-      if(d.audio && d.format==='pcm_l16_24000'){
-        await playPCM(d.audio, 24000);
-        return;
-      }
-      if(d.audio){ await playB64(d.audio); return; }
-      // else falls through to browser TTS
-    }catch(_){}
-  }
+    .replace(/\bJ\.?\s*A\.?\s*R\.?\s*V\.?\s*I\.?\s*S\b/gi, 'Jarvis');
   await speakBrowser(spoken);
 }
-
-// Play raw PCM (16-bit signed, mono) from Gemini TTS by wrapping in WAV
-function playPCM(b64, sampleRate){
-  return new Promise(res=>{
-    try{
-      const raw = atob(b64);
-      const len = raw.length;
-      const bytes = new Uint8Array(len);
-      for(let i=0;i<len;i++) bytes[i]=raw.charCodeAt(i);
-      // Build WAV header (44 bytes) + PCM data
-      const wav = new Uint8Array(44 + len);
-      const dv  = new DataView(wav.buffer);
-      const w32=(o,v)=>dv.setUint32(o,v,true), w16=(o,v)=>dv.setUint16(o,v,true);
-      // RIFF
-      wav.set([82,73,70,70],0);            // "RIFF"
-      w32(4, 36+len);
-      wav.set([87,65,86,69],8);            // "WAVE"
-      wav.set([102,109,116,32],12);        // "fmt "
-      w32(16,16); w16(20,1); w16(22,1);    // PCM, mono
-      w32(24,sampleRate); w32(28,sampleRate*2);
-      w16(32,2); w16(34,16);
-      wav.set([100,97,116,97],36);         // "data"
-      w32(40,len);
-      wav.set(bytes,44);
-      const blob=new Blob([wav],{type:'audio/wav'});
-      const url=URL.createObjectURL(blob);
-      const a=new Audio(url);
-      // Slightly lower playback rate for a deeper, calmer JARVIS feel
-      a.playbackRate=0.97;
-      a.onended=()=>{URL.revokeObjectURL(url);res()};
-      a.onerror=res;
-      a.play().catch(res);
-    }catch(_){ res(); }
-  });
-}
-
-function playB64(b64){return new Promise(res=>{const blob=new Blob([Uint8Array.from(atob(b64),c=>c.charCodeAt(0))],{type:'audio/mpeg'});const url=URL.createObjectURL(blob);const a=new Audio(url);a.onended=()=>{URL.revokeObjectURL(url);res()};a.onerror=res;a.play().catch(res)})}
 
 function speakBrowser(txt){return new Promise(res=>{
   if(!window.speechSynthesis){res();return}
   window.speechSynthesis.cancel();
+  if(!GERMAN_VOICE) pickGermanVoice();
   const u=new SpeechSynthesisUtterance(txt);
-  const vs=window.speechSynthesis.getVoices();
-  // Prefer deep British male voices for JARVIS character
-  u.voice = vs.find(v=>/Daniel/i.test(v.name)) ||           // macOS British male
-            vs.find(v=>/Google UK English Male/i.test(v.name)) ||
-            vs.find(v=>v.lang==='en-GB' && /male/i.test(v.name)) ||
-            vs.find(v=>v.lang==='en-GB') ||
-            vs.find(v=>/male/i.test(v.name) && v.lang.startsWith('de')) ||
-            vs.find(v=>v.lang.startsWith('de')) || null;
-  u.rate=0.88; u.pitch=0.7; u.volume=1;   // slower + deeper = more JARVIS
+  if(GERMAN_VOICE) u.voice=GERMAN_VOICE;
+  u.lang='de-DE';
+  u.rate=1.0;     // natürliches Tempo
+  u.pitch=1.0;    // natürliche Tonhöhe
+  u.volume=1.0;
   u.onend=res; u.onerror=res;
   window.speechSynthesis.speak(u);
 })}
+
 
 // ── SHUTDOWN ──
 function shutdown(){document.getElementById('app').style.cssText='opacity:0;transition:opacity 1.5s';setTimeout(()=>{document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;flex-direction:column;gap:14px"><div style="font-family:Orbitron,sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;letter-spacing:.4em;color:#001822">J.A.R.V.I.S.</div><div style="font-size:.65rem;letter-spacing:.22em;color:#001015;font-family:monospace">SYSTEM OFFLINE</div></div>`},1600)}
@@ -557,6 +686,12 @@ const hasSR=()=>!!(window.SpeechRecognition||window.webkitSpeechRecognition);
 let actx=null;
 function beep(f,v,d){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(_){}}
 function updateChips(){const ai=document.getElementById('chipAI');if(CFG.has_gemini){ai.textContent='AI: GEMINI PRO';ai.className='chip on'}else{ai.textContent='AI: LOCAL';ai.className='chip warn'}setTimeout(()=>window.speechSynthesis?.getVoices(),100)}
+
+// Stimmen laden sobald verfügbar (Chrome lädt asynchron)
+if(window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged = pickGermanVoice;
+  pickGermanVoice();
+}
 </script>
 </body>
 </html>
