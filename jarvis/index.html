@@ -146,6 +146,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 .sc-item .sc-del{background:transparent;border:1px solid rgba(255,59,59,.4);color:var(--r);width:30px;height:30px;border-radius:4px;cursor:pointer;flex-shrink:0}
 .sc-item .sc-del:hover{background:rgba(255,59,59,.1)}
 
+/* Eigene Befehle Editor */
+.cc-item{border:1px solid rgba(0,212,255,.18);border-radius:6px;padding:10px;margin-bottom:10px;background:rgba(0,212,255,.03)}
+.cc-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.cc-row label{font-size:.58rem;letter-spacing:.06em;color:rgba(0,212,255,.5);width:74px;flex-shrink:0}
+.cc-row input,.cc-row select{flex:1;min-width:0;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);border-radius:4px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:6px 8px;outline:none}
+.cc-row input:focus,.cc-row select:focus{border-color:var(--c)}
+.cc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cc-type{display:flex;gap:6px}
+.cc-type button{font-family:'Share Tech Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:3px;border:1px solid rgba(0,212,255,.25);background:transparent;color:rgba(0,212,255,.5);cursor:pointer}
+.cc-type button.on{background:rgba(0,212,255,.15);border-color:var(--c);color:var(--c)}
+.qbtn-type{font-family:'Share Tech Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:3px;border:1px solid rgba(0,212,255,.25);background:transparent;color:rgba(0,212,255,.5);cursor:pointer}
+.qbtn-type.on{background:rgba(0,212,255,.15);border-color:var(--c);color:var(--c)}
+.cc-del{background:transparent;border:1px solid rgba(255,59,59,.4);color:var(--r);width:28px;height:28px;border-radius:4px;cursor:pointer;flex-shrink:0}
+.cc-del:hover{background:rgba(255,59,59,.1)}
+
 .mica{display:flex;flex-direction:column;align-items:center;gap:8px}
 .mic{width:clamp(68px,13vw,80px);height:clamp(68px,13vw,80px);border-radius:50%;border:2px solid rgba(0,212,255,.28);background:rgba(2,11,20,.9);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
 .mic:hover{border-color:var(--c);box-shadow:0 0 18px rgba(0,212,255,.22)}
@@ -319,6 +334,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
         <button class="set-btn add" onclick="addShortcut()">+ KURZBEFEHL HINZUFÜGEN</button>
       </div>
 
+      <!-- Eigene Befehle (Custom Commands) -->
+      <div class="set-section">
+        <div class="set-title">🎯 EIGENE BEFEHLE</div>
+        <div class="set-hint">Eigene Sprachbefehle mit Entität und Antwort. JARVIS erkennt auch freie Formulierungen.<br>
+        <b>Abfrage:</b> liest den Zustand einer Entität. Nutze <code>{wert}</code> in der Antwort.<br>
+        <b>Steuerung:</b> ruft einen Service auf (z.B. <code>switch.turn_on</code>).</div>
+        <div id="cmdEditor"></div>
+        <button class="set-btn add" onclick="addCustomCmd()">+ EIGENEN BEFEHL HINZUFÜGEN</button>
+      </div>
+
       <div class="set-actions">
         <button class="set-btn save" onclick="saveSettings()">✓ SPEICHERN</button>
         <button class="set-btn reset" onclick="resetSettings()">↺ ZURÜCKSETZEN</button>
@@ -455,15 +480,24 @@ function startBoot(){
   v.muted=false; v.volume=1.0;
   // AudioContext freischalten (für spätere Sounds/TTS)
   try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended')actx.resume(); }catch(_){}
+  // Video spielt bis zum Ende – endBoot NUR über 'ended'-Event (siehe load-Handler)
   v.play().then(()=>{
-    // Läuft mit Ton – Sicherheits-Timeout falls 'ended' nicht feuert
-    const dur = isFinite(v.duration) && v.duration>0 ? v.duration*1000+1500 : 15000;
-    setTimeout(()=>{ if(!bootEnded) endBoot(); }, dur);
+    // Sobald Metadaten da sind, exakten Timeout auf Videolänge setzen
+    const setExactTimeout=()=>{
+      if(isFinite(v.duration) && v.duration>0){
+        const remain=(v.duration - v.currentTime)*1000 + 2000;
+        setTimeout(()=>{ if(!bootEnded) endBoot(); }, remain);
+      }else{
+        setTimeout(()=>{ if(!bootEnded) endBoot(); }, 20000);
+      }
+    };
+    if(v.readyState>=1) setExactTimeout();
+    else v.addEventListener('loadedmetadata', setExactTimeout, {once:true});
   }).catch(()=>{
     // Falls Ton-Play scheitert: stumm starten als Fallback
     v.muted=true;
     v.play().catch(()=>endBoot());
-    setTimeout(()=>{ if(!bootEnded) endBoot(); }, 15000);
+    setTimeout(()=>{ if(!bootEnded) endBoot(); }, 20000);
   });
 }
 
@@ -659,14 +693,23 @@ async function handle(txt, forceControl){
   if(!txt){setS('idle');if(wakeOn)startWake();return}
   hideTrans();setS('thinking');
   showTrans(txt);
+
+  // 1) ZUERST eigene Befehle prüfen (schnell, verlässlich)
+  let custom=null;
+  try{ custom=await tryCustomCommand(txt); }catch(_){}
+  if(custom && custom.matched){
+    hideTrans();
+    setS('speaking');
+    await Promise.all([typeText(custom.response),speak(custom.response)]);
+    setS('idle');document.getElementById('mlabel').textContent='GEDRÜCKT HALTEN ZUM SPRECHEN';
+    if(wakeOn)setTimeout(startWake,500);
+    return;
+  }
+
+  // 2) Sonst an Gemini / lokale Logik
   let resp;
   try{
-    if(forceControl){
-      // STEUERUNG-Modus: direkt HA-Befehl, kein Smalltalk
-      resp = await ask(txt, true);
-    }else{
-      resp = await ask(txt, false);
-    }
+    resp = await ask(txt, !!forceControl);
   }catch(e){resp='Meine Systeme sind momentan überlastet, Sir.'}
   hideTrans();
   const didHA = execHA(resp);
@@ -710,12 +753,34 @@ async function askGemini(txt, forceControl){
   const body={
     system_instruction:{parts:[{text:SYS+sysExtra}]},
     contents: hist,
-    generationConfig:{maxOutputTokens:400,temperature:.7}
+    generationConfig:{
+      maxOutputTokens:1024,
+      temperature:.7,
+      thinkingConfig:{thinkingBudget:0}   // Thinking AUS – sonst frisst es alle Tokens
+    }
   };
   const r=await fetch(apiUrl('api/gemini'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();
-  if(d.error)throw d.error.message||d.error;
-  const rep=d.candidates[0].content.parts[0].text;
+  if(d.error)throw (d.error.message||JSON.stringify(d.error));
+
+  // Robustes Parsing der Gemini-Antwort
+  let rep='';
+  try{
+    const cand=d.candidates && d.candidates[0];
+    if(cand){
+      const parts=cand.content && cand.content.parts;
+      if(parts && parts.length){
+        rep = parts.map(p=>p.text||'').join('').trim();
+      }
+      // Falls leer wegen MAX_TOKENS o.ä.
+      if(!rep && cand.finishReason){
+        if(cand.finishReason==='MAX_TOKENS') rep='Verzeihung Sir, meine Antwort wurde abgeschnitten. Bitte fragen Sie kürzer.';
+        else if(cand.finishReason==='SAFETY') rep='Diese Anfrage kann ich nicht beantworten, Sir.';
+      }
+    }
+  }catch(e){ rep=''; }
+
+  if(!rep) rep='Verzeihung Sir, ich habe darauf momentan keine Antwort.';
   hist.push({role:'model',parts:[{text:rep}]});
   return rep;
 }
@@ -954,12 +1019,17 @@ const DEFAULT_SHORTCUTS = [
 
 let SHORTCUTS = [];
 let TTS_ENGINES = [];
+let CUSTOM_CMDS = [];   // eigene Befehle
 
 function loadSettings(){
   try{
     const s = localStorage.getItem('jarvis_shortcuts');
     SHORTCUTS = s ? JSON.parse(s) : [...DEFAULT_SHORTCUTS];
   }catch(_){ SHORTCUTS = [...DEFAULT_SHORTCUTS]; }
+  try{
+    const c = localStorage.getItem('jarvis_custom_cmds');
+    CUSTOM_CMDS = c ? JSON.parse(c) : [];
+  }catch(_){ CUSTOM_CMDS = []; }
   try{
     TTS_ENGINE = localStorage.getItem('jarvis_tts_engine') || '';
     TTS_VOICE  = localStorage.getItem('jarvis_tts_voice')  || '';
@@ -968,6 +1038,9 @@ function loadSettings(){
 
 function saveShortcutsLocal(){
   try{ localStorage.setItem('jarvis_shortcuts', JSON.stringify(SHORTCUTS)); }catch(_){}
+}
+function saveCustomCmdsLocal(){
+  try{ localStorage.setItem('jarvis_custom_cmds', JSON.stringify(CUSTOM_CMDS)); }catch(_){}
 }
 
 function renderShortcuts(){
@@ -992,6 +1065,7 @@ async function openSettings(){
   }catch(_){ TTS_ENGINES=[]; }
   renderVoiceSelect();
   renderShortcutEditor();
+  renderCmdEditor();
 }
 function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
 
@@ -1043,6 +1117,115 @@ function addShortcut(){
   renderShortcutEditor();
 }
 
+// ── EIGENE BEFEHLE (Custom Commands) ──
+function renderCmdEditor(){
+  const box=document.getElementById('cmdEditor');
+  box.innerHTML='';
+  CUSTOM_CMDS.forEach((c,i)=>{
+    const item=document.createElement('div');
+    item.className='cc-item';
+    const isQuery = c.type!=='control';
+    item.innerHTML=`
+      <div class="cc-head">
+        <div class="cc-type">
+          <button class="qbtn-type ${isQuery?'on':''}" data-t="query">📊 ABFRAGE</button>
+          <button class="qbtn-type ${!isQuery?'on':''}" data-t="control">🎚️ STEUERUNG</button>
+        </div>
+        <button class="cc-del">✕</button>
+      </div>
+      <div class="cc-row"><label>Auslöser</label>
+        <input class="cc-trigger" value="${(c.trigger||'').replace(/"/g,'&quot;')}" placeholder="z.B. Ladezustand von Bullet"></div>
+      <div class="cc-row"><label>Entität</label>
+        <input class="cc-entity" value="${(c.entity||'').replace(/"/g,'&quot;')}" placeholder="z.B. sensor.bullet_battery" list="entityList"></div>
+      <div class="cc-row cc-service-row" style="${isQuery?'display:none':''}"><label>Service</label>
+        <input class="cc-service" value="${(c.service||'').replace(/"/g,'&quot;')}" placeholder="z.B. switch.turn_on"></div>
+      <div class="cc-row"><label>Antwort</label>
+        <input class="cc-answer" value="${(c.answer||'').replace(/"/g,'&quot;')}" placeholder="${isQuery?'z.B. Bullet hat {wert} Prozent, Sir.':'z.B. Klima gestartet, Sir.'}"></div>`;
+
+    const typeBtns=item.querySelectorAll('.qbtn-type');
+    const serviceRow=item.querySelector('.cc-service-row');
+    typeBtns.forEach(b=>b.onclick=()=>{
+      c.type=b.dataset.t;
+      typeBtns.forEach(x=>x.classList.toggle('on',x.dataset.t===c.type));
+      serviceRow.style.display = c.type==='control'?'':'none';
+    });
+    item.querySelector('.cc-trigger').oninput=e=>c.trigger=e.target.value;
+    item.querySelector('.cc-entity').oninput =e=>c.entity=e.target.value;
+    item.querySelector('.cc-service').oninput=e=>c.service=e.target.value;
+    item.querySelector('.cc-answer').oninput =e=>c.answer=e.target.value;
+    item.querySelector('.cc-del').onclick=()=>{ CUSTOM_CMDS.splice(i,1); renderCmdEditor(); };
+    box.appendChild(item);
+  });
+  ensureEntityDatalist();
+}
+
+// Datalist mit allen Entitäten für Autovervollständigung
+function ensureEntityDatalist(){
+  let dl=document.getElementById('entityList');
+  if(!dl){ dl=document.createElement('datalist'); dl.id='entityList'; document.body.appendChild(dl); }
+  dl.innerHTML='';
+  ENTITIES.forEach(e=>{
+    const o=document.createElement('option');
+    o.value=e.entity_id;
+    o.label=e.attributes.friendly_name||e.entity_id;
+    dl.appendChild(o);
+  });
+}
+
+function addCustomCmd(){
+  CUSTOM_CMDS.push({type:'query',trigger:'',entity:'',service:'',answer:''});
+  renderCmdEditor();
+}
+
+// Prüfe ob Eingabe zu einem eigenen Befehl passt. Gibt {matched, response} zurück.
+async function tryCustomCommand(txt){
+  if(!CUSTOM_CMDS.length) return null;
+  const l=txt.toLowerCase();
+  // Finde besten Treffer: alle Wörter des Triggers müssen vorkommen
+  let best=null, bestScore=0;
+  for(const c of CUSTOM_CMDS){
+    if(!c.trigger) continue;
+    const words=c.trigger.toLowerCase().split(/\s+/).filter(w=>w.length>2);
+    if(!words.length) continue;
+    const hits=words.filter(w=>l.includes(w)).length;
+    const score=hits/words.length;
+    if(score>bestScore && score>=0.6){ bestScore=score; best=c; }
+  }
+  if(!best) return null;
+
+  // ABFRAGE: Entitätszustand lesen
+  if(best.type!=='control'){
+    try{
+      const r=await fetch(apiUrl('api/ha/states/'+encodeURIComponent(best.entity)));
+      if(!r.ok) return {matched:true, response:`Ich kann ${best.entity} momentan nicht abrufen, Sir.`};
+      const d=await r.json();
+      let val=d.state;
+      const unit=d.attributes && d.attributes.unit_of_measurement;
+      if(unit) val=`${val} ${unit}`;
+      let resp=best.answer || 'Der Wert ist {wert}, Sir.';
+      resp=resp.replace(/\{wert\}/gi,val).replace(/\{state\}/gi,d.state);
+      return {matched:true, response:resp};
+    }catch(e){
+      return {matched:true, response:`Abfrage fehlgeschlagen, Sir.`};
+    }
+  }
+  // STEUERUNG: Service aufrufen
+  else{
+    try{
+      const [dom,svc]=(best.service||'').split('.');
+      if(!dom||!svc) return {matched:true, response:'Der Service ist nicht korrekt konfiguriert, Sir.'};
+      await fetch(apiUrl(`api/ha/services/${dom}/${svc}`),{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(best.entity?{entity_id:best.entity}:{})
+      });
+      setTimeout(loadEntities,1500);
+      return {matched:true, response:best.answer || 'Erledigt, Sir.'};
+    }catch(e){
+      return {matched:true, response:'Die Steuerung ist fehlgeschlagen, Sir.'};
+    }
+  }
+}
+
 function saveSettings(){
   // Stimme
   TTS_ENGINE = document.getElementById('voiceSelect').value;
@@ -1054,16 +1237,22 @@ function saveSettings(){
   // Shortcuts (leere entfernen)
   SHORTCUTS = SHORTCUTS.filter(s=>s.cmd && s.cmd.trim());
   saveShortcutsLocal();
+  // Eigene Befehle (leere entfernen)
+  CUSTOM_CMDS = CUSTOM_CMDS.filter(c=>c.trigger && c.trigger.trim() && c.entity && c.entity.trim());
+  saveCustomCmdsLocal();
   renderShortcuts();
   closeSettings();
   speak('Einstellungen gespeichert, Sir.');
 }
 
 function resetSettings(){
-  if(!confirm('Kurzbefehle auf Standard zurücksetzen?')) return;
+  if(!confirm('Kurzbefehle und eigene Befehle auf Standard zurücksetzen?')) return;
   SHORTCUTS=[...DEFAULT_SHORTCUTS];
+  CUSTOM_CMDS=[];
   saveShortcutsLocal();
+  saveCustomCmdsLocal();
   renderShortcutEditor();
+  renderCmdEditor();
   renderShortcuts();
 }
 
