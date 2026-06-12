@@ -1,6 +1,6 @@
 name: "JARVIS"
 description: "Just A Rather Very Intelligent System – Iron Man AI für Home Assistant (Gemini Pro)"
-version: "4.1.0"
+version: "5.1.0"
 slug: "jarvis"
 init: false
 arch:

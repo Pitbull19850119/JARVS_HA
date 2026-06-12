@@ -94,6 +94,58 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 .qbtn:hover{background:rgba(0,212,255,.11);border-color:var(--c);color:var(--c)}
 .qbtn:active{transform:scale(.95)}
 
+/* Shortcut-Grid (2 Reihen, bis 10) */
+.qgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;width:min(620px,94vw)}
+@media(max-width:560px){.qgrid{grid-template-columns:repeat(5,1fr);gap:5px}}
+.qcard{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.2);border-radius:6px;cursor:pointer;transition:all .18s}
+.qcard:hover{background:rgba(0,212,255,.12);border-color:var(--c);transform:translateY(-2px)}
+.qcard:active{transform:scale(.95)}
+.qcard .ic{font-size:1.3rem;line-height:1}
+.qcard .lb{font-size:.52rem;letter-spacing:.04em;color:rgba(0,212,255,.7);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* Zwei Mikrofon-Buttons */
+.mic-row{display:flex;gap:18px;align-items:center;justify-content:center}
+.mic{width:clamp(64px,12vw,76px);height:clamp(64px,12vw,76px);border-radius:50%;border:2px solid rgba(0,212,255,.28);background:rgba(2,11,20,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
+.mic .mico{font-size:clamp(1.3rem,3vw,1.6rem);pointer-events:none}
+.mic .mic-cap{font-size:.5rem;letter-spacing:.08em;color:rgba(0,212,255,.6);pointer-events:none}
+.mic-ask:hover{border-color:#a78bfa;box-shadow:0 0 18px rgba(167,139,250,.3)}
+.mic-ctrl:hover{border-color:var(--gr);box-shadow:0 0 18px rgba(0,255,157,.3)}
+.mic.active{border-color:var(--g);box-shadow:0 0 28px rgba(255,208,64,.5),0 0 56px rgba(255,208,64,.18);animation:micpulse .75s ease-in-out infinite alternate}
+@keyframes micpulse{from{box-shadow:0 0 18px rgba(255,208,64,.3)}to{box-shadow:0 0 42px rgba(255,208,64,.6),0 0 72px rgba(255,208,64,.22)}}
+.mlabel{font-size:.56rem;letter-spacing:.15em;color:rgba(0,212,255,.35);text-align:center;line-height:1.5}
+.settings-btn{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.12em;padding:5px 14px;background:transparent;border:1px solid rgba(0,212,255,.2);border-radius:3px;color:rgba(0,212,255,.5);cursor:pointer;transition:all .18s;margin-top:2px}
+.settings-btn:hover{border-color:var(--c);color:var(--c)}
+
+/* Einstellungen Overlay */
+.settings-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,5,10,.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
+.settings-overlay.on{display:flex}
+.settings-panel{width:min(620px,96vw);max-height:90vh;overflow-y:auto;background:#040d16;border:1px solid rgba(0,212,255,.3);border-radius:10px;box-shadow:0 0 50px rgba(0,212,255,.15)}
+.settings-panel::-webkit-scrollbar{width:4px}.settings-panel::-webkit-scrollbar-thumb{background:rgba(0,212,255,.3)}
+.settings-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,212,255,.15);font-family:'Orbitron',sans-serif;font-size:.8rem;letter-spacing:.15em;color:var(--c);position:sticky;top:0;background:#040d16;z-index:2}
+.settings-close{background:transparent;border:1px solid rgba(255,59,59,.4);color:var(--r);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:.9rem}
+.settings-close:hover{background:rgba(255,59,59,.1)}
+.settings-body{padding:20px}
+.set-section{margin-bottom:24px}
+.set-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.12em;color:var(--c);margin-bottom:10px}
+.set-select,.set-input{width:100%;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.25);border-radius:4px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:.78rem;padding:8px 10px;outline:none}
+.set-select:focus,.set-input:focus{border-color:var(--c)}
+.set-row{display:flex;gap:8px;margin-top:8px}
+.set-row .set-input{flex:1}
+.set-btn{font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.08em;padding:8px 14px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.3);border-radius:4px;color:var(--c);cursor:pointer;transition:all .18s;white-space:nowrap}
+.set-btn:hover{background:rgba(0,212,255,.16)}
+.set-btn.add{width:100%;margin-top:10px;border-style:dashed}
+.set-btn.save{background:rgba(0,255,157,.12);border-color:var(--gr);color:var(--gr);flex:1}
+.set-btn.reset{border-color:rgba(255,208,64,.4);color:var(--g)}
+.set-hint{font-size:.62rem;color:rgba(0,212,255,.4);margin-top:6px;line-height:1.5}
+.set-actions{display:flex;gap:10px;margin-top:8px}
+.sc-item{display:flex;gap:6px;align-items:center;margin-bottom:7px}
+.sc-item input{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);border-radius:4px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:.74rem;padding:6px 8px;outline:none}
+.sc-item .sc-ic{width:46px;text-align:center}
+.sc-item .sc-lb{width:90px}
+.sc-item .sc-cmd{flex:1;min-width:0}
+.sc-item .sc-del{background:transparent;border:1px solid rgba(255,59,59,.4);color:var(--r);width:30px;height:30px;border-radius:4px;cursor:pointer;flex-shrink:0}
+.sc-item .sc-del:hover{background:rgba(255,59,59,.1)}
+
 .mica{display:flex;flex-direction:column;align-items:center;gap:8px}
 .mic{width:clamp(68px,13vw,80px);height:clamp(68px,13vw,80px);border-radius:50%;border:2px solid rgba(0,212,255,.28);background:rgba(2,11,20,.9);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
 .mic:hover{border-color:var(--c);box-shadow:0 0 18px rgba(0,212,255,.22)}
@@ -111,15 +163,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 <body>
 
 <div id="boot">
-  <video id="bootVideo" playsinline muted preload="auto"></video>
+  <video id="bootVideo" playsinline preload="auto"></video>
   <div id="bootSkip" onclick="endBoot()">ÜBERSPRINGEN ►</div>
   <div id="bootTapHint" onclick="startBoot()">
     <div class="play-icon">
       <div style="font-size:clamp(1.6rem,5vw,2.6rem);font-weight:900;letter-spacing:.3em">J.A.R.V.I.S.</div>
-      <div style="font-size:.7rem;letter-spacing:.2em;margin-top:14px;color:rgba(0,212,255,.6)">► TIPPEN ZUM STARTEN</div>
+      <div class="play-circle">▶</div>
+      <div style="font-size:.75rem;letter-spacing:.2em;margin-top:16px;color:rgba(0,212,255,.7)">TIPPEN ZUM STARTEN</div>
+      <div style="font-size:.6rem;letter-spacing:.15em;margin-top:6px;color:rgba(0,212,255,.4)">🔊 MIT TON</div>
     </div>
   </div>
 </div>
+
+<style>
+.play-circle{width:72px;height:72px;border-radius:50%;border:2px solid rgba(0,212,255,.5);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--c);margin:22px auto 0;padding-left:6px;animation:playPulse 1.6s ease-in-out infinite;box-shadow:0 0 24px rgba(0,212,255,.25)}
+@keyframes playPulse{0%,100%{transform:scale(1);box-shadow:0 0 24px rgba(0,212,255,.25)}50%{transform:scale(1.08);box-shadow:0 0 40px rgba(0,212,255,.5)}}
+</style>
 
 <div class="hexbg"><canvas id="hexCanvas"></canvas></div>
 <div class="vig"></div><div class="scan"></div>
@@ -207,21 +266,64 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
   </div>
 
   <div class="bottom">
-    <div class="qrow">
-      <button class="qbtn" onclick="qcmd('Licht einschalten')">💡 LICHT AN</button>
-      <button class="qbtn" onclick="qcmd('Licht ausschalten')">💡 LICHT AUS</button>
-      <button class="qbtn" onclick="qcmd('Status aller Geräte')">📊 STATUS</button>
-      <button class="qbtn" onclick="qcmd('Alarm scharf schalten')">🔒 SCHARF</button>
-      <button class="qbtn" onclick="qcmd('Alarm deaktivieren')">🔓 UNSCHARF</button>
-      <button class="qbtn" onclick="qcmd('Wie spät ist es?')">🕐 UHRZEIT</button>
-    </div>
+    <!-- Konfigurierbare Shortcuts (2 Reihen) -->
+    <div class="qgrid" id="qgrid"></div>
+
+    <!-- Zwei Modus-Buttons: Frage (Gemini) + Steuerung (HA) -->
     <div class="mica">
-      <div class="mic" id="mic" onpointerdown="ptDown(event)" onpointerup="ptUp(event)" onpointercancel="ptUp(event)">
-        <span class="mico">🎙️</span>
+      <div class="mic-row">
+        <div class="mic mic-ask" id="micAsk"
+          onpointerdown="micDown(event,'ask')" onpointerup="micUp(event)" onpointercancel="micUp(event)">
+          <span class="mico">❓</span>
+          <span class="mic-cap">FRAGE</span>
+        </div>
+        <div class="mic mic-ctrl" id="micCtrl"
+          onpointerdown="micDown(event,'control')" onpointerup="micUp(event)" onpointercancel="micUp(event)">
+          <span class="mico">🏠</span>
+          <span class="mic-cap">STEUERUNG</span>
+        </div>
       </div>
-      <div class="mlabel" id="mlabel">HALTEN ZUM SPRECHEN<br>ODER „HEY JARVIS" SAGEN</div>
+      <div class="mlabel" id="mlabel">GEDRÜCKT HALTEN ZUM SPRECHEN</div>
+      <button class="settings-btn" onclick="openSettings()">⚙ EINSTELLUNGEN</button>
     </div>
-    <div class="ticker"><div class="ticin">◈ J.A.R.V.I.S. ONLINE &nbsp;&nbsp;&nbsp; ◈ STARK INDUSTRIES HEIMAUTOMATISIERUNG &nbsp;&nbsp;&nbsp; ◈ HALTEN ZUM SPRECHEN ODER „HEY JARVIS" &nbsp;&nbsp;&nbsp; ◈ ALLE SYSTEME NOMINAL &nbsp;&nbsp;&nbsp;</div></div>
+
+    <div class="ticker"><div class="ticin">◈ J.A.R.V.I.S. ONLINE &nbsp;&nbsp;&nbsp; ◈ STARK INDUSTRIES HEIMAUTOMATISIERUNG &nbsp;&nbsp;&nbsp; ◈ FRAGE = GEMINI · STEUERUNG = HOME ASSISTANT &nbsp;&nbsp;&nbsp; ◈ ALLE SYSTEME NOMINAL &nbsp;&nbsp;&nbsp;</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ EINSTELLUNGEN OVERLAY ═══════════ -->
+<div id="settings" class="settings-overlay">
+  <div class="settings-panel">
+    <div class="settings-head">
+      <span>⚙ J.A.R.V.I.S. EINSTELLUNGEN</span>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-body">
+      <!-- Stimme -->
+      <div class="set-section">
+        <div class="set-title">🔊 STIMME</div>
+        <select id="voiceSelect" class="set-select"></select>
+        <div class="set-row">
+          <input id="voiceText" class="set-input" value="Guten Tag Sir, Jarvis ist einsatzbereit." placeholder="Test-Text...">
+          <button class="set-btn" onclick="testVoice()">▶ TESTEN</button>
+        </div>
+        <div class="set-hint" id="voiceHint">Lade verfügbare Stimmen...</div>
+      </div>
+
+      <!-- Shortcuts -->
+      <div class="set-section">
+        <div class="set-title">⚡ KURZBEFEHLE (max. 10)</div>
+        <div class="set-hint">Icon, Beschriftung und Befehl/Entität frei wählbar. Befehl = was an JARVIS gesendet wird.</div>
+        <div id="shortcutEditor"></div>
+        <button class="set-btn add" onclick="addShortcut()">+ KURZBEFEHL HINZUFÜGEN</button>
+      </div>
+
+      <div class="set-actions">
+        <button class="set-btn save" onclick="saveSettings()">✓ SPEICHERN</button>
+        <button class="set-btn reset" onclick="resetSettings()">↺ ZURÜCKSETZEN</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -323,18 +425,20 @@ window.addEventListener('load', ()=>{
   preloadConfig();
   const v = document.getElementById('bootVideo');
   v.src = apiUrl('api/startup_video');   // relativer Pfad für Ingress
-  v.play().then(()=>{
-    document.getElementById('bootTapHint').style.display='none';
-    bootStarted=true;
-  }).catch(()=>{ /* Autoplay blockiert – Tap-Hinweis bleibt */ });
+  v.preload = 'auto';
+  v.load();
+  // NICHT automatisch (stumm) starten – auf Tippen warten für Ton.
+  // Tap-Hinweis bleibt sichtbar bis der Nutzer tippt.
   v.addEventListener('ended', endBoot);
   v.addEventListener('error', endBoot);
-  // Sicherheits-Timeout: falls Video hängt, nach 14s weiter
-  setTimeout(()=>{ if(!bootEnded) endBoot(); }, 14000);
+  // Sicherheits-Timeout NUR falls gar nichts passiert (sehr lang)
+  setTimeout(()=>{ if(!bootStarted && !bootEnded) endBoot(); }, 30000);
 });
 
 // Config + Entities sofort laden, damit Chips früh stimmen
 async function preloadConfig(){
+  loadSettings();
+  renderShortcuts();
   if(IS_ADDON){
     try{ const r=await fetch(apiUrl('api/config')); CFG=await r.json(); }
     catch(e){ try{ const r=await fetch(apiUrl('api/config')); CFG=await r.json(); }catch(_){} }
@@ -348,9 +452,19 @@ function startBoot(){
   bootStarted=true;
   document.getElementById('bootTapHint').style.display='none';
   const v=document.getElementById('bootVideo');
-  v.muted=false; v.volume=0.8;
-  v.play().catch(()=>{ v.muted=true; v.play().catch(()=>endBoot()); });
-  try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); }catch(_){}
+  v.muted=false; v.volume=1.0;
+  // AudioContext freischalten (für spätere Sounds/TTS)
+  try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended')actx.resume(); }catch(_){}
+  v.play().then(()=>{
+    // Läuft mit Ton – Sicherheits-Timeout falls 'ended' nicht feuert
+    const dur = isFinite(v.duration) && v.duration>0 ? v.duration*1000+1500 : 15000;
+    setTimeout(()=>{ if(!bootEnded) endBoot(); }, dur);
+  }).catch(()=>{
+    // Falls Ton-Play scheitert: stumm starten als Fallback
+    v.muted=true;
+    v.play().catch(()=>endBoot());
+    setTimeout(()=>{ if(!bootEnded) endBoot(); }, 15000);
+  });
 }
 
 function endBoot(){
@@ -416,9 +530,6 @@ function setS(s){
   if(s!=='speaking'){ ring.setAttribute('stroke', c.ring); }
   else { ring.setAttribute('stroke', '#00d4ff'); }
   inner.setAttribute('stroke', (s==='listening'?'rgba(255,208,64,.6)':'rgba(0,212,255,.5)'));
-
-  const mic=document.getElementById('mic');
-  if(mic) mic.classList.toggle('active', s==='listening');
 }
 
 // ── TYPEWRITER ──
@@ -434,21 +545,100 @@ async function typeText(txt){
 
 // ── MIC PUSH-TO-TALK ──
 let recog=null,wakeRecog=null,wakeOn=true,ptrDown=false;
-function ptDown(e){e.currentTarget.setPointerCapture(e.pointerId);if(ptrDown||S==='listening')return;ptrDown=true;stopWake();beginListen()}
-function ptUp(e){if(!ptrDown)return;ptrDown=false;if(recog){try{recog.stop()}catch(_){}}}
+let micMode='ask';        // 'ask' = Gemini-Frage, 'control' = HA-Steuerung
+let gotFinal=false;       // verhindert dass onend die Verarbeitung killt
+let lastTranscript='';
+
+function micDown(e,mode){
+  try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}
+  if(ptrDown||S==='listening')return;
+  micMode=mode;
+  ptrDown=true;
+  stopWake();
+  beginListen();
+}
+function micUp(e){
+  if(!ptrDown)return;
+  ptrDown=false;
+  if(recog){try{recog.stop()}catch(_){}}
+}
+
 function beginListen(){
-  if(!hasSR()){typeText('Spracherkennung nicht verfügbar. Bitte Chrome oder Edge verwenden, Sir.');return}
-  beep(880,.12,.1);setS('listening');document.getElementById('mlabel').textContent='HÖRE ZU...';
+  if(!hasSR()){
+    typeText('Spracherkennung wird in diesem Kontext nicht unterstützt, Sir. Bitte nutzen Sie die Kurzbefehle oder öffnen JARVIS in Chrome.');
+    setS('idle');
+    return;
+  }
+  gotFinal=false;
+  lastTranscript='';
+  beep(880,.12,.1);
+  setS('listening');
+  const activeMic = micMode==='ask'?document.getElementById('micAsk'):document.getElementById('micCtrl');
+  activeMic.classList.add('active');
+  document.getElementById('mlabel').textContent = micMode==='ask'?'FRAGE WIRD AUFGENOMMEN...':'BEFEHL WIRD AUFGENOMMEN...';
+
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recog=new SR();recog.lang='de-DE';recog.continuous=false;recog.interimResults=true;
+  recog=new SR();
+  recog.lang='de-DE';
+  recog.continuous=false;
+  recog.interimResults=true;
+  recog.maxAlternatives=1;
+
   recog.onresult=e=>{
     let interim='',final='';
-    for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript;else interim+=e.results[i][0].transcript}
-    showTrans(final||interim);
-    if(final){recog=null;handle(final.replace(/^(hey\s*jarvis)[,\s]*/i,'').trim())}
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    lastTranscript = final || interim;
+    showTrans(lastTranscript);
+    if(final){
+      gotFinal=true;
+      const r=recog; recog=null;
+      try{r.stop()}catch(_){}
+      processVoice(final.replace(/^(hey\s*jarvis)[,\s]*/i,'').trim());
+    }
   };
-  recog.onerror=recog.onend=()=>{recog=null;setS('idle');document.getElementById('mlabel').innerHTML='HALTEN ZUM SPRECHEN<br>ODER „HEY JARVIS" SAGEN';if(wakeOn&&!ptrDown)setTimeout(startWake,400)};
-  recog.start();
+
+  recog.onerror=(ev)=>{
+    recog=null;
+    resetMicUI();
+    if(ev.error==='no-speech') typeText('Ich habe nichts gehört, Sir. Bitte erneut versuchen.');
+  };
+
+  recog.onend=()=>{
+    recog=null;
+    // WICHTIG: nur wenn KEIN finales Ergebnis kam, das Interim verarbeiten
+    if(!gotFinal){
+      resetMicUI();
+      if(lastTranscript.trim()){
+        // Interim-Ergebnis trotzdem verarbeiten (Safari liefert oft kein final)
+        processVoice(lastTranscript.replace(/^(hey\s*jarvis)[,\s]*/i,'').trim());
+      }else if(wakeOn&&!ptrDown){
+        setTimeout(startWake,400);
+      }
+    }
+  };
+
+  try{recog.start()}catch(err){ resetMicUI(); }
+}
+
+function resetMicUI(){
+  document.getElementById('micAsk').classList.remove('active');
+  document.getElementById('micCtrl').classList.remove('active');
+  setS('idle');
+  document.getElementById('mlabel').textContent='GEDRÜCKT HALTEN ZUM SPRECHEN';
+}
+
+// Verarbeite Sprachbefehl je nach Modus
+function processVoice(txt){
+  resetMicUI();
+  if(!txt){ if(wakeOn)setTimeout(startWake,400); return; }
+  if(micMode==='control'){
+    handle(txt, true);   // true = HA-Steuerung erzwingen
+  }else{
+    handle(txt, false);  // Gemini-Frage
+  }
 }
 
 // ── WAKE WORD ──
@@ -456,7 +646,7 @@ function startWake(){
   if(!wakeOn||recog||ptrDown||wakeRecog)return;if(!hasSR())return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   wakeRecog=new SR();wakeRecog.lang='de-DE';wakeRecog.continuous=true;wakeRecog.interimResults=true;
-  wakeRecog.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i][0].transcript.toLowerCase().includes('jarvis')){stopWake();setTimeout(beginListen,80);return}}};
+  wakeRecog.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i][0].transcript.toLowerCase().includes('jarvis')){stopWake();micMode='ask';setTimeout(beginListen,80);return}}};
   wakeRecog.onend=()=>{wakeRecog=null;if(wakeOn&&!recog&&!ptrDown)setTimeout(startWake,700)};
   wakeRecog.onerror=()=>{wakeRecog=null;if(wakeOn&&!recog&&!ptrDown)setTimeout(startWake,1200)};
   try{wakeRecog.start()}catch(_){}
@@ -465,20 +655,29 @@ function stopWake(){if(wakeRecog){try{wakeRecog.stop()}catch(_){}wakeRecog=null}
 
 // ── COMMAND ──
 let hist=[];
-async function handle(txt){
-  if(!txt){setS('idle');startWake();return}
+async function handle(txt, forceControl){
+  if(!txt){setS('idle');if(wakeOn)startWake();return}
   hideTrans();setS('thinking');
+  showTrans(txt);
   let resp;
-  try{resp=await ask(txt)}catch(e){resp='Meine Systeme sind momentan überlastet, Sir.'}
-  execHA(resp);
+  try{
+    if(forceControl){
+      // STEUERUNG-Modus: direkt HA-Befehl, kein Smalltalk
+      resp = await ask(txt, true);
+    }else{
+      resp = await ask(txt, false);
+    }
+  }catch(e){resp='Meine Systeme sind momentan überlastet, Sir.'}
+  hideTrans();
+  const didHA = execHA(resp);
   const clean=resp.replace(/\[HA:[^\]]+\]/g,'').replace(/\[SHUTDOWN\]/g,'').trim();
   setS('speaking');
   await Promise.all([typeText(clean),speak(clean)]);
-  setS('idle');document.getElementById('mlabel').innerHTML='HALTEN ZUM SPRECHEN<br>ODER „HEY JARVIS" SAGEN';
+  setS('idle');document.getElementById('mlabel').textContent='GEDRÜCKT HALTEN ZUM SPRECHEN';
   if(resp.includes('[SHUTDOWN]')){setTimeout(shutdown,2200);return}
   if(wakeOn)setTimeout(startWake,500);
 }
-function qcmd(t){stopWake();if(recog){try{recog.stop()}catch(_){}}handle(t)}
+function qcmd(t){stopWake();if(recog){try{recog.stop()}catch(_){}}handle(t,false)}
 
 // ── AI ──
 const SYS=`You are J.A.R.V.I.S., Tony Stark's AI assistant from Iron Man. Stay fully in character.
@@ -499,14 +698,17 @@ Behaviour:
 - You may answer general knowledge and current questions normally, in character.
 - Always reply in the user's language (German or English) while keeping the Jarvis persona.`;
 
-async function ask(txt){return CFG.has_gemini?askGemini(txt):local(txt)}
-async function askGemini(txt){
+async function ask(txt, forceControl){return CFG.has_gemini?askGemini(txt,forceControl):local(txt)}
+async function askGemini(txt, forceControl){
   hist.push({role:'user',parts:[{text:txt}]});
   if(hist.length>20)hist.splice(0,2);
   const ctx=haContextText();
-  // Build Gemini request format
+  let sysExtra = '\n\nVerfügbare Smart-Home-Geräte (nutze die exakte entity_id in Klammern für [HA:...] Befehle):\n'+ctx;
+  if(forceControl){
+    sysExtra += '\n\nWICHTIG: Der Nutzer ist im STEUERUNGS-MODUS. Interpretiere die Eingabe als Smart-Home-Befehl und gib IMMER einen passenden [HA:...] Tag aus. Halte die Antwort sehr kurz.';
+  }
   const body={
-    system_instruction:{parts:[{text:SYS+'\n\nVerfügbare Smart-Home-Geräte (nutze die exakte entity_id in Klammern für [HA:...] Befehle):\n'+ctx}]},
+    system_instruction:{parts:[{text:SYS+sysExtra}]},
     contents: hist,
     generationConfig:{maxOutputTokens:400,temperature:.7}
   };
@@ -660,46 +862,69 @@ function execHA(resp){
   }
   return didAction;
 }
-// ── TTS – natürliche deutsche Stimme ──
+// ── TTS – Piper (HA) mit Browser-Fallback ──
 let GERMAN_VOICE = null;
+let TTS_ENGINE = '';      // gewählte HA TTS-Engine (z.B. tts.piper)
+let TTS_VOICE = '';       // gewählte Stimme
 
 function pickGermanVoice(){
   if(!window.speechSynthesis) return null;
   const vs = window.speechSynthesis.getVoices();
   if(!vs.length) return null;
-  // Best natural German voices, in order of preference
   GERMAN_VOICE =
-    vs.find(v=>/Google Deutsch/i.test(v.name)) ||                    // Chrome – sehr natürlich
-    vs.find(v=>v.lang==='de-DE' && /Markus|Yannick|Conrad/i.test(v.name)) ||  // Edge männlich
-    vs.find(v=>v.lang==='de-DE' && /Petra|Katja|Hedda/i.test(v.name)) ||      // Edge weiblich
+    vs.find(v=>/Google Deutsch/i.test(v.name)) ||
+    vs.find(v=>v.lang==='de-DE' && /Markus|Yannick|Conrad/i.test(v.name)) ||
+    vs.find(v=>v.lang==='de-DE' && /Petra|Katja|Hedda/i.test(v.name)) ||
     vs.find(v=>v.lang==='de-DE') ||
     vs.find(v=>v.lang && v.lang.startsWith('de')) ||
     null;
   return GERMAN_VOICE;
 }
 
+function fixName(txt){
+  return txt.replace(/J\.A\.R\.V\.I\.S\.?/gi,'Jarvis').replace(/\bJ\.?\s*A\.?\s*R\.?\s*V\.?\s*I\.?\s*S\b/gi,'Jarvis');
+}
+
 async function speak(txt){
-  // "J.A.R.V.I.S." als "Jarvis" aussprechen, nicht buchstabieren
-  const spoken = txt
-    .replace(/J\.A\.R\.V\.I\.S\.?/gi, 'Jarvis')
-    .replace(/\bJ\.?\s*A\.?\s*R\.?\s*V\.?\s*I\.?\s*S\b/gi, 'Jarvis');
+  const spoken = fixName(txt);
+  // Bevorzugt Piper (HA) wenn eine Engine gewählt ist
+  if(TTS_ENGINE){
+    try{
+      const r=await fetch(apiUrl('api/tts_speak'),{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({text:spoken, engine:TTS_ENGINE, voice:TTS_VOICE})
+      });
+      const d=await r.json();
+      if(d.path || d.url){
+        const audioUrl = d.path ? apiUrl('api/tts_audio')+'?path='+encodeURIComponent(d.path) : d.url;
+        await playUrl(audioUrl);
+        return;
+      }
+    }catch(e){ /* Fallback unten */ }
+  }
   await speakBrowser(spoken);
 }
 
+function playUrl(url){
+  return new Promise(res=>{
+    try{
+      const a=new Audio(url);
+      a.onended=res; a.onerror=()=>{ speakBrowser('').then(res); };
+      a.play().catch(()=>res());
+    }catch(_){ res(); }
+  });
+}
+
 function speakBrowser(txt){return new Promise(res=>{
-  if(!window.speechSynthesis){res();return}
+  if(!window.speechSynthesis||!txt){res();return}
   window.speechSynthesis.cancel();
   if(!GERMAN_VOICE) pickGermanVoice();
   const u=new SpeechSynthesisUtterance(txt);
   if(GERMAN_VOICE) u.voice=GERMAN_VOICE;
-  u.lang='de-DE';
-  u.rate=1.0;     // natürliches Tempo
-  u.pitch=1.0;    // natürliche Tonhöhe
-  u.volume=1.0;
+  u.lang='de-DE'; u.rate=1.0; u.pitch=1.0; u.volume=1.0;
   u.onend=res; u.onerror=res;
   window.speechSynthesis.speak(u);
 })}
-
 
 // ── SHUTDOWN ──
 function shutdown(){document.getElementById('app').style.cssText='opacity:0;transition:opacity 1.5s';setTimeout(()=>{document.body.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;flex-direction:column;gap:14px"><div style="font-family:Orbitron,sans-serif;font-size:clamp(1.5rem,5vw,2.8rem);font-weight:900;letter-spacing:.4em;color:#001822">J.A.R.V.I.S.</div><div style="font-size:.65rem;letter-spacing:.22em;color:#001015;font-family:monospace">SYSTEM OFFLINE</div></div>`},1600)}
@@ -709,7 +934,147 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const hasSR=()=>!!(window.SpeechRecognition||window.webkitSpeechRecognition);
 let actx=null;
 function beep(f,v,d){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(_){}}
-function updateChips(){const ai=document.getElementById('chipAI');if(CFG.has_gemini){ai.textContent='AI: GEMINI PRO';ai.className='chip on'}else{ai.textContent='AI: LOCAL';ai.className='chip warn'}setTimeout(()=>window.speechSynthesis?.getVoices(),100)}
+function updateChips(){const ai=document.getElementById('chipAI');if(CFG.has_gemini){ai.textContent='AI: GEMINI';ai.className='chip on'}else{ai.textContent='AI: LOCAL';ai.className='chip warn'}setTimeout(()=>window.speechSynthesis?.getVoices(),100)}
+
+// ════════════════════════════════════════════
+//  EINSTELLUNGEN & KURZBEFEHLE
+// ════════════════════════════════════════════
+const DEFAULT_SHORTCUTS = [
+  {icon:'💡', label:'Licht an',    cmd:'Schalte das Licht ein'},
+  {icon:'🌑', label:'Licht aus',   cmd:'Schalte das Licht aus'},
+  {icon:'📊', label:'Status',      cmd:'Status aller Geräte'},
+  {icon:'🔒', label:'Scharf',      cmd:'Alarm scharf schalten'},
+  {icon:'🔓', label:'Unscharf',    cmd:'Alarm deaktivieren'},
+  {icon:'🕐', label:'Uhrzeit',     cmd:'Wie spät ist es?'},
+  {icon:'🌡️', label:'Temperatur',  cmd:'Wie warm ist es zuhause?'},
+  {icon:'🌤️', label:'Wetter',      cmd:'Wie ist das Wetter heute?'},
+  {icon:'🎵', label:'Musik',       cmd:'Spiele Musik'},
+  {icon:'🛏️', label:'Gute Nacht',  cmd:'Schalte alle Lichter aus und aktiviere den Alarm'},
+];
+
+let SHORTCUTS = [];
+let TTS_ENGINES = [];
+
+function loadSettings(){
+  try{
+    const s = localStorage.getItem('jarvis_shortcuts');
+    SHORTCUTS = s ? JSON.parse(s) : [...DEFAULT_SHORTCUTS];
+  }catch(_){ SHORTCUTS = [...DEFAULT_SHORTCUTS]; }
+  try{
+    TTS_ENGINE = localStorage.getItem('jarvis_tts_engine') || '';
+    TTS_VOICE  = localStorage.getItem('jarvis_tts_voice')  || '';
+  }catch(_){}
+}
+
+function saveShortcutsLocal(){
+  try{ localStorage.setItem('jarvis_shortcuts', JSON.stringify(SHORTCUTS)); }catch(_){}
+}
+
+function renderShortcuts(){
+  const grid = document.getElementById('qgrid');
+  grid.innerHTML = '';
+  SHORTCUTS.slice(0,10).forEach((sc,i)=>{
+    const d=document.createElement('div');
+    d.className='qcard';
+    d.onclick=()=>qcmd(sc.cmd);
+    d.innerHTML=`<span class="ic">${sc.icon||'⚡'}</span><span class="lb">${sc.label||''}</span>`;
+    grid.appendChild(d);
+  });
+}
+
+async function openSettings(){
+  document.getElementById('settings').classList.add('on');
+  // TTS-Engines laden
+  try{
+    const r=await fetch(apiUrl('api/tts_engines'));
+    const d=await r.json();
+    TTS_ENGINES = d.engines||[];
+  }catch(_){ TTS_ENGINES=[]; }
+  renderVoiceSelect();
+  renderShortcutEditor();
+}
+function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
+
+function renderVoiceSelect(){
+  const sel=document.getElementById('voiceSelect');
+  const hint=document.getElementById('voiceHint');
+  sel.innerHTML='';
+  // Browser-Stimme als Option
+  const opt0=document.createElement('option');
+  opt0.value=''; opt0.textContent='Browser-Stimme (Standard)';
+  sel.appendChild(opt0);
+  // HA / Piper Engines
+  TTS_ENGINES.forEach(e=>{
+    const o=document.createElement('option');
+    o.value=e.entity_id; o.textContent=e.name+' (HA)';
+    sel.appendChild(o);
+  });
+  sel.value = TTS_ENGINE || '';
+  if(TTS_ENGINES.length===0){
+    hint.textContent='Keine HA-TTS-Engine gefunden. Piper muss in HA unter Einstellungen → Sprachassistenten eingerichtet sein. Browser-Stimme wird genutzt.';
+  }else{
+    hint.textContent=`${TTS_ENGINES.length} HA-Stimme(n) gefunden. Piper liefert die natürlichste deutsche Stimme.`;
+  }
+}
+
+function renderShortcutEditor(){
+  const box=document.getElementById('shortcutEditor');
+  box.innerHTML='';
+  SHORTCUTS.forEach((sc,i)=>{
+    const row=document.createElement('div');
+    row.className='sc-item';
+    row.innerHTML=`
+      <input class="sc-ic" value="${(sc.icon||'').replace(/"/g,'&quot;')}" placeholder="🔵" maxlength="3">
+      <input class="sc-lb" value="${(sc.label||'').replace(/"/g,'&quot;')}" placeholder="Name">
+      <input class="sc-cmd" value="${(sc.cmd||'').replace(/"/g,'&quot;')}" placeholder="Befehl an JARVIS...">
+      <button class="sc-del">✕</button>`;
+    const [ic,lb,cmd]=row.querySelectorAll('input');
+    ic.oninput=()=>SHORTCUTS[i].icon=ic.value;
+    lb.oninput=()=>SHORTCUTS[i].label=lb.value;
+    cmd.oninput=()=>SHORTCUTS[i].cmd=cmd.value;
+    row.querySelector('.sc-del').onclick=()=>{ SHORTCUTS.splice(i,1); renderShortcutEditor(); };
+    box.appendChild(row);
+  });
+}
+
+function addShortcut(){
+  if(SHORTCUTS.length>=10){ alert('Maximal 10 Kurzbefehle.'); return; }
+  SHORTCUTS.push({icon:'⚡',label:'Neu',cmd:''});
+  renderShortcutEditor();
+}
+
+function saveSettings(){
+  // Stimme
+  TTS_ENGINE = document.getElementById('voiceSelect').value;
+  TTS_VOICE  = '';
+  try{
+    localStorage.setItem('jarvis_tts_engine', TTS_ENGINE);
+    localStorage.setItem('jarvis_tts_voice', TTS_VOICE);
+  }catch(_){}
+  // Shortcuts (leere entfernen)
+  SHORTCUTS = SHORTCUTS.filter(s=>s.cmd && s.cmd.trim());
+  saveShortcutsLocal();
+  renderShortcuts();
+  closeSettings();
+  speak('Einstellungen gespeichert, Sir.');
+}
+
+function resetSettings(){
+  if(!confirm('Kurzbefehle auf Standard zurücksetzen?')) return;
+  SHORTCUTS=[...DEFAULT_SHORTCUTS];
+  saveShortcutsLocal();
+  renderShortcutEditor();
+  renderShortcuts();
+}
+
+async function testVoice(){
+  const txt=document.getElementById('voiceText').value || 'Guten Tag Sir.';
+  const eng=document.getElementById('voiceSelect').value;
+  const prevEngine=TTS_ENGINE, prevVoice=TTS_VOICE;
+  TTS_ENGINE=eng; TTS_VOICE='';
+  await speak(txt);
+  TTS_ENGINE=prevEngine; TTS_VOICE=prevVoice;
+}
 
 // Stimmen laden sobald verfügbar (Chrome lädt asynchron)
 if(window.speechSynthesis){

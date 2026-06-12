@@ -89,6 +89,81 @@ async def handle_config(req):
         "has_ha_token": bool(HA_TOKEN),
     })
 
+async def handle_tts_engines(req):
+    """Liste verfügbare TTS-Engines (Piper etc.) aus HA."""
+    try:
+        r = requests.get(f"{HA_BASE}/api/states", headers={"Authorization": f"Bearer {HA_TOKEN}"}, timeout=8)
+        states = r.json()
+        engines = []
+        for s in states:
+            eid = s["entity_id"]
+            if eid.startswith("tts."):
+                engines.append({
+                    "entity_id": eid,
+                    "name": s.get("attributes",{}).get("friendly_name", eid),
+                })
+        return web.json_response({"engines": engines})
+    except Exception as e:
+        log.error(f"TTS-Engines Fehler: {e}")
+        return web.json_response({"engines": []})
+
+async def handle_tts_speak(req):
+    """
+    Text via Piper (HA TTS) in Sprache wandeln.
+    Nutzt tts.speak Service und gibt die Media-URL zurück.
+    """
+    try:
+        body = await req.json()
+        text   = body.get("text","")
+        engine = body.get("engine","")     # z.B. tts.piper
+        voice  = body.get("voice","")      # optionale Stimme
+        if not engine:
+            # Erste verfügbare TTS-Engine automatisch wählen
+            r = requests.get(f"{HA_BASE}/api/states", headers={"Authorization": f"Bearer {HA_TOKEN}"}, timeout=8)
+            for s in r.json():
+                if s["entity_id"].startswith("tts."):
+                    engine = s["entity_id"]; break
+        if not engine:
+            return web.json_response({"error":"Keine TTS-Engine gefunden"}, status=404)
+
+        # tts.speak via HA - generiert Audio und gibt URL
+        # Wir nutzen den älteren tts_get_url Ansatz für direkte Media-URL
+        payload = {
+            "engine_id": engine,
+            "message": text,
+        }
+        if voice:
+            payload["options"] = {"voice": voice}
+
+        # API: POST /api/tts_get_url
+        r = requests.post(f"{HA_BASE}/api/tts_get_url",
+            headers={"Authorization": f"Bearer {HA_TOKEN}", "Content-Type":"application/json"},
+            json=payload, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            url = data.get("url","")
+            # Audio durch unseren Proxy laden (sonst CORS/Auth-Probleme)
+            return web.json_response({"url": url, "path": data.get("path","")})
+        log.warning(f"tts_get_url HTTP {r.status_code}: {r.text[:200]}")
+        return web.json_response({"error": f"TTS HTTP {r.status_code}", "browser_fallback": True})
+    except Exception as e:
+        log.error(f"TTS-Speak Fehler: {e}")
+        return web.json_response({"error": str(e), "browser_fallback": True})
+
+async def handle_tts_audio(req):
+    """Proxy für TTS-Audio-Dateien (umgeht Auth/CORS)."""
+    try:
+        path = req.query.get("path","")
+        if not path:
+            return web.Response(status=400)
+        url = f"{HA_BASE}{path}" if path.startswith("/") else f"{HA_BASE}/{path}"
+        r = requests.get(url, headers={"Authorization": f"Bearer {HA_TOKEN}"}, timeout=15)
+        ct = r.headers.get("Content-Type","audio/mpeg")
+        return web.Response(body=r.content, content_type=ct, status=r.status_code)
+    except Exception as e:
+        log.error(f"TTS-Audio Fehler: {e}")
+        return web.Response(status=500)
+
 async def handle_diag(req):
     """Diagnose-Endpunkt: zeigt Verbindungsstatus."""
     ha_ok = False
@@ -144,6 +219,9 @@ async def main():
     app.router.add_get("/",                  handle_index)
     app.router.add_get("/api/config",        handle_config)
     app.router.add_get("/api/diag",          handle_diag)
+    app.router.add_get("/api/tts_engines",   handle_tts_engines)
+    app.router.add_post("/api/tts_speak",    handle_tts_speak)
+    app.router.add_get("/api/tts_audio",     handle_tts_audio)
     app.router.add_get("/api/startup_sound", handle_startup_sound)
     app.router.add_get("/api/startup_video", handle_startup_video)
     app.router.add_get("/api/ha/{path:.*}",  handle_ha_proxy)
