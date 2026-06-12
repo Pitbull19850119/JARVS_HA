@@ -111,10 +111,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 <body>
 
 <div id="boot">
-  <video id="bootVideo" playsinline muted preload="auto">
-    <source src="api/startup_video" type="video/mp4">
-    <source src="/api/startup_video" type="video/mp4">
-  </video>
+  <video id="bootVideo" playsinline muted preload="auto"></video>
   <div id="bootSkip" onclick="endBoot()">ÜBERSPRINGEN ►</div>
   <div id="bootTapHint" onclick="startBoot()">
     <div class="play-icon">
@@ -230,8 +227,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 
 <script>
 // ── CONFIG ──
-const IS_ADDON = location.port==='8766'||location.pathname.startsWith('/app/');
-let CFG={has_gemini:false,gemini_model:'gemini-2.5-pro',voice_mode:'browser',tts_voice:'de'};
+// API immer relativ aufrufen – funktioniert bei Ingress, Port-Zugriff und lokal
+const IS_ADDON = true;
+let CFG={has_gemini:false,gemini_model:'gemini-2.5-pro',loaded:false};
+
+// Basis-URL für API-Calls relativ zum aktuellen Pfad (wichtig für HA Ingress!)
+function apiUrl(path){
+  // path z.B. "api/ha/states" → relativ zum aktuellen Verzeichnis
+  let base = location.pathname;
+  if(!base.endsWith('/')) base = base.substring(0, base.lastIndexOf('/')+1);
+  return base + path;
+}
 
 // All HA entities, loaded once on startup
 let ENTITIES = [];
@@ -309,20 +315,33 @@ function startHexBackground(){
 }
 
 // ── BOOT mit Video ──
-let bootStarted=false, bootEnded=false;
+let bootStarted=false, bootEnded=false, initDone=false;
 
 window.addEventListener('load', ()=>{
   startHexBackground();
+  // Config + HA SOFORT laden (unabhängig vom Video)
+  preloadConfig();
   const v = document.getElementById('bootVideo');
-  // Versuch automatisch zu starten (muted erlaubt das)
+  v.src = apiUrl('api/startup_video');   // relativer Pfad für Ingress
   v.play().then(()=>{
     document.getElementById('bootTapHint').style.display='none';
     bootStarted=true;
-  }).catch(()=>{
-    // Autoplay blockiert – Tap-Hinweis bleibt sichtbar
-  });
+  }).catch(()=>{ /* Autoplay blockiert – Tap-Hinweis bleibt */ });
   v.addEventListener('ended', endBoot);
+  v.addEventListener('error', endBoot);
+  // Sicherheits-Timeout: falls Video hängt, nach 14s weiter
+  setTimeout(()=>{ if(!bootEnded) endBoot(); }, 14000);
 });
+
+// Config + Entities sofort laden, damit Chips früh stimmen
+async function preloadConfig(){
+  if(IS_ADDON){
+    try{ const r=await fetch(apiUrl('api/config')); CFG=await r.json(); }
+    catch(e){ try{ const r=await fetch(apiUrl('api/config')); CFG=await r.json(); }catch(_){} }
+  }
+  updateChips();
+  await loadEntities();
+}
 
 function startBoot(){
   if(bootStarted) return;
@@ -330,8 +349,7 @@ function startBoot(){
   document.getElementById('bootTapHint').style.display='none';
   const v=document.getElementById('bootVideo');
   v.muted=false; v.volume=0.8;
-  v.play().catch(()=>{ v.muted=true; v.play(); });
-  // Audio-Kontext freischalten für spätere Sounds
+  v.play().catch(()=>{ v.muted=true; v.play().catch(()=>endBoot()); });
   try{ if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)(); }catch(_){}
 }
 
@@ -346,7 +364,12 @@ function endBoot(){
 
 // ── INIT ──
 async function init(){
-  if(IS_ADDON){try{const r=await fetch('/api/config');CFG=await r.json();}catch(e){}}
+  if(initDone) return;
+  initDone=true;
+  // Config evtl. schon geladen – sicherstellen
+  if(IS_ADDON && !CFG.loaded){
+    try{ const r=await fetch(apiUrl('api/config')); CFG=await r.json(); CFG.loaded=true; }catch(e){}
+  }
   if(window.speechSynthesis){ window.speechSynthesis.getVoices(); }
   updateChips();
   await loadEntities();
@@ -361,6 +384,7 @@ async function init(){
   ]);
   setS('idle');startWake();
 }
+
 
 
 // ── STATE ──
@@ -486,7 +510,7 @@ async function askGemini(txt){
     contents: hist,
     generationConfig:{maxOutputTokens:400,temperature:.7}
   };
-  const r=await fetch('/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const r=await fetch(apiUrl('api/gemini'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();
   if(d.error)throw d.error.message||d.error;
   const rep=d.candidates[0].content.parts[0].text;
@@ -577,7 +601,7 @@ function room(t){
 // ── HA ──
 async function loadEntities(){
   try{
-    const r=await fetch('/api/ha/states');
+    const r=await fetch(apiUrl('api/ha/states'));
     if(!r.ok){ setChip(false); return; }
     ENTITIES = await r.json();
     setChip(true);
@@ -627,7 +651,7 @@ function execHA(resp){
     const entity=m[2].trim();
     if(!domain||!service)continue;
     const body = entity ? {entity_id: entity} : {};
-    fetch(`/api/ha/services/${domain}/${service}`,{
+    fetch(apiUrl(`api/ha/services/${domain}/${service}`),{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body)
     }).then(()=>{ setTimeout(loadEntities,1500); })

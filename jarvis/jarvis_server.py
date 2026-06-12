@@ -22,24 +22,49 @@ CONFIG       = load_config()
 SUPERVISOR   = os.environ.get("SUPERVISOR_TOKEN","")
 USER_TOKEN   = CONFIG.get("ha_token","").strip()
 USER_URL     = CONFIG.get("ha_url","http://homeassistant:8123").strip().rstrip("/")
-GEMINI_KEY   = CONFIG.get("gemini_api_key","")
+GEMINI_KEY   = CONFIG.get("gemini_api_key","").strip()
 GEMINI_MDL   = CONFIG.get("gemini_model","gemini-2.5-pro")
 GEMINI_BASE  = "https://generativelanguage.googleapis.com/v1beta"
 
-# Determine which HA endpoint + token to use.
-# Priority: user-supplied token (full access) → supervisor proxy (limited)
+log.info(f"Gemini Key vorhanden: {'JA' if GEMINI_KEY else 'NEIN'} ({len(GEMINI_KEY)} Zeichen)")
+
+def test_ha(base, token):
+    """Teste ob eine HA-Verbindung funktioniert."""
+    try:
+        r = requests.get(f"{base}/api/", headers={"Authorization": f"Bearer {token}"}, timeout=5)
+        return r.status_code == 200
+    except Exception as e:
+        log.info(f"  Test {base} fehlgeschlagen: {e}")
+        return False
+
+# Kandidaten in Prioritätsreihenfolge durchprobieren
+CANDIDATES = []
+if SUPERVISOR:
+    CANDIDATES.append(("http://supervisor/core", SUPERVISOR, "Supervisor-Proxy"))
 if USER_TOKEN:
-    HA_BASE  = USER_URL
-    HA_TOKEN = USER_TOKEN
-    log.info(f"HA-Zugriff über benutzer-Token: {HA_BASE}")
-elif SUPERVISOR:
-    HA_BASE  = "http://supervisor/core"
-    HA_TOKEN = SUPERVISOR
-    log.info("HA-Zugriff über Supervisor-Proxy")
-else:
-    HA_BASE  = USER_URL
-    HA_TOKEN = ""
-    log.warning("Kein HA-Token! Bitte ha_token in den Add-on Optionen eintragen.")
+    CANDIDATES.append((USER_URL, USER_TOKEN, "Benutzer-Token"))
+    # Häufige interne URLs auch mit User-Token testen
+    for alt in ["http://homeassistant:8123","http://homeassistant.local:8123",
+                "http://172.30.32.1:8123","http://supervisor/core"]:
+        if alt != USER_URL:
+            CANDIDATES.append((alt, USER_TOKEN, f"Benutzer-Token @ {alt}"))
+
+HA_BASE, HA_TOKEN = None, None
+for base, token, label in CANDIDATES:
+    log.info(f"Teste HA-Verbindung: {label} ({base})")
+    if test_ha(base, token):
+        HA_BASE, HA_TOKEN = base, token
+        log.info(f"✓ HA verbunden über: {label} ({base})")
+        break
+
+if not HA_BASE:
+    # Nichts hat funktioniert – nimm besten Kandidaten als Fallback
+    if CANDIDATES:
+        HA_BASE, HA_TOKEN = CANDIDATES[0][0], CANDIDATES[0][1]
+        log.warning(f"⚠ Keine HA-Verbindung bestätigt. Nutze Fallback: {HA_BASE}")
+    else:
+        HA_BASE, HA_TOKEN = USER_URL, ""
+        log.error("⚠ Kein HA-Token gefunden! Bitte ha_token eintragen ODER homeassistant_api nutzen.")
 
 async def handle_index(req):
     with open("/usr/share/jarvis/index.html") as f:
@@ -62,6 +87,26 @@ async def handle_config(req):
         "has_gemini":   bool(GEMINI_KEY),
         "gemini_model": GEMINI_MDL,
         "has_ha_token": bool(HA_TOKEN),
+    })
+
+async def handle_diag(req):
+    """Diagnose-Endpunkt: zeigt Verbindungsstatus."""
+    ha_ok = False
+    ha_err = ""
+    try:
+        r = requests.get(f"{HA_BASE}/api/", headers={"Authorization": f"Bearer {HA_TOKEN}"}, timeout=5)
+        ha_ok = r.status_code == 200
+        ha_err = f"HTTP {r.status_code}"
+    except Exception as e:
+        ha_err = str(e)
+    return web.json_response({
+        "ha_base": HA_BASE,
+        "ha_token_set": bool(HA_TOKEN),
+        "ha_connection": ha_ok,
+        "ha_error": ha_err,
+        "supervisor_available": bool(SUPERVISOR),
+        "gemini_set": bool(GEMINI_KEY),
+        "gemini_model": GEMINI_MDL,
     })
 
 async def handle_ha_proxy(req):
@@ -98,6 +143,7 @@ async def main():
     app = web.Application(client_max_size=15*1024*1024)
     app.router.add_get("/",                  handle_index)
     app.router.add_get("/api/config",        handle_config)
+    app.router.add_get("/api/diag",          handle_diag)
     app.router.add_get("/api/startup_sound", handle_startup_sound)
     app.router.add_get("/api/startup_video", handle_startup_video)
     app.router.add_get("/api/ha/{path:.*}",  handle_ha_proxy)
