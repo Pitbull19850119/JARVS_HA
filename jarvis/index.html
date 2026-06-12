@@ -152,8 +152,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
 .cc-item{border:1px solid rgba(0,212,255,.18);border-radius:6px;padding:10px;margin-bottom:10px;background:rgba(0,212,255,.03)}
 .cc-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
 .cc-row label{font-size:.58rem;letter-spacing:.06em;color:rgba(0,212,255,.5);width:74px;flex-shrink:0}
-.cc-row input,.cc-row select{flex:1;min-width:0;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);border-radius:4px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:6px 8px;outline:none}
-.cc-row input:focus,.cc-row select:focus{border-color:var(--c)}
+.cc-row input,.cc-row select,.cc-row textarea{flex:1;min-width:0;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.22);border-radius:4px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:.72rem;padding:6px 8px;outline:none}
+.cc-row input:focus,.cc-row select:focus,.cc-row textarea:focus{border-color:var(--c)}
+.cc-row textarea{resize:vertical;line-height:1.4}
+.cc-trigger-row{align-items:flex-start}
+.cc-trigger-row label{margin-top:6px}
 .cc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .cc-type{display:flex;gap:6px}
 .cc-type button{font-family:'Share Tech Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:3px;border:1px solid rgba(0,212,255,.25);background:transparent;color:rgba(0,212,255,.5);cursor:pointer}
@@ -340,6 +343,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
       <div class="set-section">
         <div class="set-title">🎯 EIGENE BEFEHLE</div>
         <div class="set-hint">Eigene Sprachbefehle mit Entität und Antwort. JARVIS erkennt auch freie Formulierungen.<br>
+        <b>Auslöser:</b> mehrere Satzvarianten möglich – eine pro Zeile (z.B. „Ladezustand Bullet" und „wie voll ist Bullet").<br>
         <b>Abfrage:</b> liest den Zustand einer Entität. Nutze <code>{wert}</code> in der Antwort.<br>
         <b>Steuerung:</b> ruft einen Service auf (z.B. <code>switch.turn_on</code>).</div>
         <div id="cmdEditor"></div>
@@ -353,9 +357,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Sh
           <input type="checkbox" id="skipVideoChk"> Startvideo überspringen (für schwache Wandtablets)
         </label>
         <label class="set-check" style="margin-top:10px">
-          <input type="checkbox" id="wakeOffChk"> Wake-Word „Hey JARVIS" deaktivieren (Mikro nicht automatisch starten)
+          <input type="checkbox" id="wakeOnChk"> Wake-Word „Hey JARVIS" aktivieren (Mikro lauscht dauerhaft)
         </label>
-        <div class="set-hint">Bei deaktiviertem Wake-Word startet das Mikrofon nur wenn du die Tasten FRAGE/STEUERUNG drückst. Empfohlen für Wandtablets.</div>
+        <div class="set-hint">Standardmäßig AUS. Wenn aktiviert lauscht das Mikrofon dauerhaft auf „Hey JARVIS". Sonst startet das Mikro nur über die Tasten FRAGE/STEUERUNG. Auf Wandtablets besser ausgeschaltet lassen.</div>
       </div>
 
       <div class="set-actions">
@@ -634,8 +638,9 @@ async function typeText(txt){
 
 // ── MIC PUSH-TO-TALK ──
 let recog=null,wakeRecog=null,ptrDown=false;
-let wakeOn=true;
-try{ wakeOn = localStorage.getItem('jarvis_wake_off')!=='1'; }catch(_){}
+// Wake-Word standardmäßig AUS. Nur an wenn der Nutzer es explizit aktiviert hat.
+let wakeOn=false;
+try{ wakeOn = localStorage.getItem('jarvis_wake_on')==='1'; }catch(_){}
 let micMode='ask';        // 'ask' = Gemini-Frage, 'control' = HA-Steuerung
 let gotFinal=false;       // verhindert dass onend die Verarbeitung killt
 let lastTranscript='';
@@ -1125,8 +1130,8 @@ async function openSettings(){
   renderCmdEditor();
   // Skip-Video Checkbox laden
   try{ document.getElementById('skipVideoChk').checked = localStorage.getItem('jarvis_skip_video')==='1'; }catch(_){}
-  // Wake-Word Checkbox laden (checked = deaktiviert)
-  try{ document.getElementById('wakeOffChk').checked = localStorage.getItem('jarvis_wake_off')==='1'; }catch(_){}
+  // Wake-Word Checkbox laden (checked = aktiviert)
+  try{ document.getElementById('wakeOnChk').checked = localStorage.getItem('jarvis_wake_on')==='1'; }catch(_){}
 }
 function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
 
@@ -1194,14 +1199,14 @@ function renderCmdEditor(){
         </div>
         <button class="cc-del">✕</button>
       </div>
-      <div class="cc-row"><label>Auslöser</label>
-        <input class="cc-trigger" value="${(c.trigger||'').replace(/"/g,'&quot;')}" placeholder="z.B. Ladezustand von Bullet"></div>
+      <div class="cc-row cc-trigger-row"><label>Auslöser</label>
+        <textarea class="cc-trigger" rows="2" placeholder="Eine Variante pro Zeile, z.B.:&#10;Ladezustand von Bullet&#10;Akkustand Bullet&#10;wie voll ist Bullet">${(c.trigger||'').replace(/</g,'&lt;')}</textarea></div>
       <div class="cc-row"><label>Entität</label>
         <input class="cc-entity" value="${(c.entity||'').replace(/"/g,'&quot;')}" placeholder="z.B. sensor.bullet_battery" list="entityList"></div>
       <div class="cc-row cc-service-row" style="${isQuery?'display:none':''}"><label>Service</label>
         <input class="cc-service" value="${(c.service||'').replace(/"/g,'&quot;')}" placeholder="z.B. switch.turn_on"></div>
       <div class="cc-row"><label>Antwort</label>
-        <input class="cc-answer" value="${(c.answer||'').replace(/"/g,'&quot;')}" placeholder="${isQuery?'z.B. Bullet hat {wert} Prozent, Sir.':'z.B. Klima gestartet, Sir.'}"></div>`;
+        <input class="cc-answer" value="${(c.answer||'').replace(/"/g,'&quot;')}" placeholder="${isQuery?'z.B. Bullet hat {wert}, Sir.':'z.B. Klima gestartet, Sir.'}"></div>`;
 
     const typeBtns=item.querySelectorAll('.qbtn-type');
     const serviceRow=item.querySelector('.cc-service-row');
@@ -1242,15 +1247,19 @@ function addCustomCmd(){
 async function tryCustomCommand(txt){
   if(!CUSTOM_CMDS.length) return null;
   const l=txt.toLowerCase();
-  // Finde besten Treffer: alle Wörter des Triggers müssen vorkommen
+  // Finde besten Treffer über ALLE Satzvarianten jedes Befehls
   let best=null, bestScore=0;
   for(const c of CUSTOM_CMDS){
     if(!c.trigger) continue;
-    const words=c.trigger.toLowerCase().split(/\s+/).filter(w=>w.length>2);
-    if(!words.length) continue;
-    const hits=words.filter(w=>l.includes(w)).length;
-    const score=hits/words.length;
-    if(score>bestScore && score>=0.6){ bestScore=score; best=c; }
+    // Mehrere Varianten: getrennt durch | oder Zeilenumbruch
+    const variants = c.trigger.split(/[|\n]/).map(v=>v.trim()).filter(Boolean);
+    for(const variant of variants){
+      const words=variant.toLowerCase().split(/\s+/).filter(w=>w.length>2);
+      if(!words.length) continue;
+      const hits=words.filter(w=>l.includes(w)).length;
+      const score=hits/words.length;
+      if(score>bestScore && score>=0.6){ bestScore=score; best=c; }
+    }
   }
   if(!best) return null;
 
@@ -1300,9 +1309,9 @@ function saveSettings(){
     localStorage.setItem('jarvis_skip_video', document.getElementById('skipVideoChk').checked ? '1':'0');
   }catch(_){}
   // Wake-Word an/aus
-  const wakeOff = document.getElementById('wakeOffChk').checked;
-  try{ localStorage.setItem('jarvis_wake_off', wakeOff ? '1':'0'); }catch(_){}
-  wakeOn = !wakeOff;
+  const wakeEnabled = document.getElementById('wakeOnChk').checked;
+  try{ localStorage.setItem('jarvis_wake_on', wakeEnabled ? '1':'0'); }catch(_){}
+  wakeOn = wakeEnabled;
   if(wakeOn){ startWake(); }
   else { stopWake(); }
   // Shortcuts (leere entfernen)
